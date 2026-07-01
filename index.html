@@ -822,13 +822,6 @@
             .guide {
                 padding: 16px 14px;
             }
-
-            .toast {
-                font-size: 13px;
-                padding: 12px 20px;
-                white-space: normal;
-                max-width: 92%;
-            }
         }
 
         @media (max-width: 480px) {
@@ -933,18 +926,16 @@
     </div>
 
     <!-- ============================================================
-    ADD FORM (переработана)
+    ADD FORM
     ============================================================ -->
     <section class="add-section">
         <div class="add-form-wrap">
             <form class="add-form-grid" id="addForm" autocomplete="off">
-                <!-- Босс -->
                 <div class="field-group">
                     <label for="bossSelect">Босс</label>
                     <select id="bossSelect"></select>
                 </div>
 
-                <!-- Режим -->
                 <div class="field-group">
                     <label for="modeSelect">Режим</label>
                     <select id="modeSelect">
@@ -955,7 +946,6 @@
                     </select>
                 </div>
 
-                <!-- Количество допок -->
                 <div class="field-group">
                     <label for="tatuSelect">Доп. наград за нападение</label>
                     <select id="tatuSelect"></select>
@@ -964,13 +954,11 @@
                     </div>
                 </div>
 
-                <!-- Лимит нападений -->
                 <div class="field-group">
                     <label for="attackLimitInput">Лимит нападений</label>
                     <input type="number" id="attackLimitInput" value="9" min="1" step="1">
                 </div>
 
-                <!-- Info cards -->
                 <div class="form-info-grid" id="formInfoGrid">
                     <div class="form-info-item">
                         <div class="info-label">HP</div>
@@ -990,7 +978,6 @@
                     </div>
                 </div>
 
-                <!-- Add button -->
                 <div class="add-btn-wrap">
                     <button type="button" class="btn-add" id="addBtn">➕ Добавить босса</button>
                 </div>
@@ -1069,7 +1056,6 @@
         <p><strong>4. Экспорт:</strong> Выберите формат (TSV или Excel) и нажмите «Экспорт» — файл скачается автоматически.</p>
         <p><strong>5. Импорт:</strong> Нажмите «Импорт» и выберите ранее сохранённый файл (TSV или Excel .xls) — таблица восстановится.</p>
         <p><strong>6. Очистка:</strong> Кнопка «Очистить всё» удаляет всех боссов и очищает локальное хранилище.</p>
-        <p><strong>7. Копирование ID:</strong> Нажмите «📋 Копировать ID» справа вверху, чтобы скопировать только цифровой идентификатор разработчика.</p>
         <p style="margin-top:8px; color:var(--text-muted); font-size:13px;">ℹ️ Все числа отображаются с разделителями тысяч для удобства чтения.</p>
     </div>
 
@@ -1125,7 +1111,11 @@
             modes: {
                 '1': { dmg: 27500000, max: 2 },
                 '3': { dmg: null, max: 0 },
-                '6': { dmg: 28000000, max: 4 },
+                '6': {
+                    dmg: 28000000,
+                    max: 4,
+                    thresholds: [0, 28000000, 55000000, 83000000, 110000000]
+                },
                 '12': { dmg: null, max: 0 }
             }
         },
@@ -1229,6 +1219,17 @@
         return MODES[modeValue] ? MODES[modeValue].label : modeValue;
     }
 
+    function isZmei6(boss) {
+        return boss.name === 'Змей' && boss.mode === '6';
+    }
+
+    function getZmeiThreshold(boss) {
+        if (!isZmei6(boss)) return 0;
+        const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+        const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+        return thresholds[idx] || 0;
+    }
+
     // ================================================================
     // 5. ТЕМНАЯ ТЕМА
     // ================================================================
@@ -1296,7 +1297,12 @@
         const dmg = modeData.dmg;
         const max = modeData.max;
 
-        displayDmgPerTatu.textContent = dmg !== null ? fmt(dmg) : 'нет';
+        // Для Змея в режиме 6 показываем первый порог
+        if (bossName === 'Змей' && mode === '6' && modeData.thresholds) {
+            displayDmgPerTatu.textContent = fmt(modeData.thresholds[1] || 0);
+        } else {
+            displayDmgPerTatu.textContent = dmg !== null ? fmt(dmg) : 'нет';
+        }
         displayMaxTatu.textContent = max;
 
         tatuSelect.innerHTML = '';
@@ -1421,7 +1427,12 @@
 
         let sumDmg = 0, sumExtra = 0, sumAll = 0;
         bosses.forEach(boss => {
-            const dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            let dmgPerAttack;
+            if (isZmei6(boss)) {
+                dmgPerAttack = getZmeiThreshold(boss);
+            } else {
+                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            }
             const totalDmg = dmgPerAttack * boss.attackLimit;
             const extraTatu = boss.tatuPerAttack * boss.attackLimit;
             const winTatu = boss.attackLimit;
@@ -1435,7 +1446,6 @@
         statExtraTatu.textContent = fmt(sumExtra);
         statAllTatu.textContent = fmt(sumAll);
 
-        // Обновляем итоговую строку
         document.getElementById('totalDmg').textContent = fmt(sumDmg);
         document.getElementById('totalExtraTatu').textContent = fmt(sumExtra);
         document.getElementById('totalWinTatu').textContent = fmt(sumDmg > 0 ? bosses.reduce((s, b) => s + b.attackLimit, 0) : 0);
@@ -1456,7 +1466,20 @@
 
         let html = '';
         bosses.forEach((boss, index) => {
-            const dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            let dmgPerAttack;
+            let displayDmg;
+            const isZmei = isZmei6(boss);
+
+            if (isZmei) {
+                dmgPerAttack = getZmeiThreshold(boss);
+                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                displayDmg = thresholds[idx] || 0;
+            } else {
+                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                displayDmg = boss.dmgPerTatu;
+            }
+
             const totalDmg = dmgPerAttack * boss.attackLimit;
             const extraTatu = boss.tatuPerAttack * boss.attackLimit;
             const winTatu = boss.attackLimit;
@@ -1474,7 +1497,12 @@
                         </select>
                     </td>`;
             html += `<td class="eff-hp" style="font-weight:600;">${fmt(boss.effectiveHp)}</td>`;
-            html += `<td><input type="text" class="edit-dmg" value="${fmt(boss.dmgPerTatu)}" data-id="${boss.id}"></td>`;
+
+            // Урон на 1 доп. тату — для Змея readonly с порогом
+            const readonlyAttr = isZmei ? 'readonly' : '';
+            const titleAttr = isZmei ? `title="Пороги: ${BOSSES['Змей'].modes['6'].thresholds.slice(1).map(fmt).join(' / ')}"` : '';
+            html += `<td><input type="text" class="edit-dmg" value="${fmt(displayDmg)}" data-id="${boss.id}" ${readonlyAttr} ${titleAttr}></td>`;
+
             html += `<td><input type="number" class="edit-tatu" value="${boss.tatuPerAttack}" data-id="${boss.id}" min="0" step="1"></td>`;
             html += `<td><input type="number" class="edit-limit" value="${boss.attackLimit}" data-id="${boss.id}" min="1" step="1"></td>`;
             html += `<td style="font-weight:600;">${fmt(dmgPerAttack)}</td>`;
@@ -1488,7 +1516,6 @@
 
         tableBody.innerHTML = html;
 
-        // Обновляем итоговую строку
         tableFoot.style.display = 'table-footer-group';
         updateStats();
 
@@ -1534,6 +1561,14 @@
             boss.effectiveHp = boss.baseHp * getModeMultiplier(boss.mode);
             changed = true;
         } else if (cls.includes('edit-dmg')) {
+            // Запрещаем изменение для Змея в режиме 6
+            if (isZmei6(boss)) {
+                // Возвращаем правильное значение
+                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                target.value = fmt(thresholds[idx] || 0);
+                return;
+            }
             const val = parseNumber(target.value);
             if (!isNaN(val) && val >= 0) {
                 boss.dmgPerTatu = val;
@@ -1597,16 +1632,30 @@
         let header = ['Босс','Базовое HP','Режим','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
         let rows = [];
         bosses.forEach(boss => {
-            const dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            let dmgPerAttack, displayDmg;
+            if (isZmei6(boss)) {
+                dmgPerAttack = getZmeiThreshold(boss);
+                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                displayDmg = thresholds[idx] || 0;
+            } else {
+                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                displayDmg = boss.dmgPerTatu;
+            }
             const totalDmg = dmgPerAttack * boss.attackLimit;
             const extraTatu = boss.tatuPerAttack * boss.attackLimit;
             const winTatu = boss.attackLimit;
             const allTatu = extraTatu + winTatu;
-            rows.push([boss.name, boss.baseHp, getModeLabel(boss.mode), boss.effectiveHp, boss.dmgPerTatu, boss.tatuPerAttack, boss.attackLimit, dmgPerAttack, totalDmg, extraTatu, winTatu, allTatu]);
+            rows.push([boss.name, boss.baseHp, getModeLabel(boss.mode), boss.effectiveHp, displayDmg, boss.tatuPerAttack, boss.attackLimit, dmgPerAttack, totalDmg, extraTatu, winTatu, allTatu]);
         });
         let sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
         bosses.forEach(boss => {
-            const dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            let dmgPerAttack;
+            if (isZmei6(boss)) {
+                dmgPerAttack = getZmeiThreshold(boss);
+            } else {
+                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            }
             const totalDmg = dmgPerAttack * boss.attackLimit;
             const extraTatu = boss.tatuPerAttack * boss.attackLimit;
             const winTatu = boss.attackLimit;
@@ -1627,16 +1676,30 @@
         headers.forEach(h => html += `<th>${h}</th>`);
         html += '</tr></thead><tbody>';
         bosses.forEach(boss => {
-            const dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            let dmgPerAttack, displayDmg;
+            if (isZmei6(boss)) {
+                dmgPerAttack = getZmeiThreshold(boss);
+                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                displayDmg = thresholds[idx] || 0;
+            } else {
+                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                displayDmg = boss.dmgPerTatu;
+            }
             const totalDmg = dmgPerAttack * boss.attackLimit;
             const extraTatu = boss.tatuPerAttack * boss.attackLimit;
             const winTatu = boss.attackLimit;
             const allTatu = extraTatu + winTatu;
-            html += `<tr><td>${boss.name}</td><td>${fmt(boss.baseHp)}</td><td>${getModeLabel(boss.mode)}</td><td>${fmt(boss.effectiveHp)}</td><td>${fmt(boss.dmgPerTatu)}</td><td>${boss.tatuPerAttack}</td><td>${boss.attackLimit}</td><td>${fmt(dmgPerAttack)}</td><td>${fmt(totalDmg)}</td><td>${fmt(extraTatu)}</td><td>${fmt(winTatu)}</td><td>${fmt(allTatu)}</td></tr>`;
+            html += `<tr><td>${boss.name}</td><td>${fmt(boss.baseHp)}</td><td>${getModeLabel(boss.mode)}</td><td>${fmt(boss.effectiveHp)}</td><td>${fmt(displayDmg)}</td><td>${boss.tatuPerAttack}</td><td>${boss.attackLimit}</td><td>${fmt(dmgPerAttack)}</td><td>${fmt(totalDmg)}</td><td>${fmt(extraTatu)}</td><td>${fmt(winTatu)}</td><td>${fmt(allTatu)}</td></tr>`;
         });
         let sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
         bosses.forEach(boss => {
-            const dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            let dmgPerAttack;
+            if (isZmei6(boss)) {
+                dmgPerAttack = getZmeiThreshold(boss);
+            } else {
+                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+            }
             const totalDmg = dmgPerAttack * boss.attackLimit;
             const extraTatu = boss.tatuPerAttack * boss.attackLimit;
             const winTatu = boss.attackLimit;
@@ -1728,6 +1791,16 @@
                     }
                 }
                 if (newBosses.length === 0) { showToast('⚠️ Не найдено данных для импорта'); return; }
+
+                // Корректируем Змея при импорте
+                newBosses = newBosses.map(b => {
+                    if (b.name === 'Змей' && b.mode === '6') {
+                        const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                        b.dmgPerTatu = thresholds[1] || 28000000;
+                    }
+                    return b;
+                });
+
                 bosses = [];
                 nextId = 1;
                 newBosses.forEach(b => {
@@ -1778,9 +1851,8 @@
     }
 
     // ================================================================
-    // 15. КОПИРОВАНИЕ ID (добавляем в шапку скрыто)
+    // 15. КОПИРОВАНИЕ ID
     // ================================================================
-    // добавляем кнопку копирования ID в шапку через JS
     (function addCopyIdBtn() {
         const headerActions = document.querySelector('.header-actions');
         const btn = document.createElement('button');
@@ -1802,7 +1874,6 @@
                 showToast('📋 Скопировано: ' + id);
             });
         });
-        // вставляем перед themeToggle
         const themeBtn = document.querySelector('.theme-toggle');
         headerActions.insertBefore(btn, themeBtn);
     })();

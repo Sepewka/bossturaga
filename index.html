@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Dopki.ru — Калькулятор урона по боссам</title>
     <style>
-        /* ================================================================
-           ROOT VARIABLES / THEME
-           ================================================================ */
+        /* ===== Все стили без изменений (скопированы из вашего файла) ===== */
         :root {
-            /* Light theme */
             --bg-body: #f0f2f5;
             --bg-card: #ffffff;
             --bg-card-hover: #f8f9fa;
@@ -28,28 +25,22 @@
             --bg-btn-danger-hover: #fdd0d0;
             --bg-select: #ffffff;
             --bg-toast: #0b1a2e;
-
             --text-primary: #0b1a2e;
             --text-secondary: #5e6f8d;
             --text-inverse: #ffffff;
             --text-muted: #8a9bb5;
             --text-link: #2b6cff;
-
             --border-color: #e6edf6;
             --border-input: #d5dfec;
-            --shadow-card: 0 4px 20px rgba(0, 20, 40, 0.06);
-            --shadow-hover: 0 8px 30px rgba(0, 20, 40, 0.10);
+            --shadow-card: 0 4px 20px rgba(0,20,40,0.06);
+            --shadow-hover: 0 8px 30px rgba(0,20,40,0.10);
             --radius-card: 16px;
             --radius-input: 12px;
             --radius-btn: 30px;
             --radius-table: 16px;
-
             --transition: 0.25s ease;
-
             --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, system-ui, sans-serif;
         }
-
-        /* Dark theme */
         [data-theme="dark"] {
             --bg-body: #0f1217;
             --bg-card: #1a1e26;
@@ -69,28 +60,17 @@
             --bg-btn-danger-hover: #4d2222;
             --bg-select: #1a1e26;
             --bg-toast: #2b6cff;
-
             --text-primary: #e8edf5;
             --text-secondary: #8fa0bb;
             --text-inverse: #ffffff;
             --text-muted: #6a7b96;
             --text-link: #5a8eff;
-
             --border-color: #2a2f3a;
             --border-input: #2f3642;
-            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+            --shadow-card: 0 4px 20px rgba(0,0,0,0.3);
+            --shadow-hover: 0 8px 30px rgba(0,0,0,0.4);
         }
-
-        /* ================================================================
-           RESET & BASE
-           ================================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: var(--font);
             background: var(--bg-body);
@@ -101,136 +81,49 @@
             display: flex;
             justify-content: center;
         }
-
-        .container {
-            max-width: 1400px;
-            width: 100%;
-        }
-
-        /* ================================================================
-           HEADER
-           ================================================================ */
+        .container { max-width: 1400px; width: 100%; }
         .app-header {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            padding: 12px 20px 12px 24px;
-            background: var(--bg-card);
-            border-radius: var(--radius-card);
-            box-shadow: var(--shadow-card);
-            margin-bottom: 24px;
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 16px; padding: 12px 20px 12px 24px;
+            background: var(--bg-card); border-radius: var(--radius-card);
+            box-shadow: var(--shadow-card); margin-bottom: 24px;
             transition: background var(--transition), box-shadow var(--transition);
         }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .logo-area { display: flex; align-items: center; gap: 12px; }
         .logo-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+            width: 42px; height: 42px; border-radius: 12px;
             background: linear-gradient(135deg, #2b6cff, #4a85ff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: #fff;
-            font-weight: 700;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #fff; font-weight: 700; flex-shrink: 0;
         }
-
-        .logo-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-
-        .logo-text .title {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.3px;
-            transition: color var(--transition);
-        }
-
-        .logo-text .sub {
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--text-secondary);
-            transition: color var(--transition);
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
+        .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .logo-text .title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; transition: color var(--transition); }
+        .logo-text .sub { font-size: 13px; font-weight: 400; color: var(--text-secondary); transition: color var(--transition); }
+        .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .header-actions .btn-link {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 500;
-            padding: 6px 14px;
-            border-radius: var(--radius-btn);
-            cursor: pointer;
+            background: none; border: none; color: var(--text-secondary);
+            font-size: 14px; font-weight: 500; padding: 6px 14px;
+            border-radius: var(--radius-btn); cursor: pointer;
             transition: background var(--transition), color var(--transition);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
         }
-
-        .header-actions .btn-link:hover {
-            background: var(--bg-btn-secondary);
-            color: var(--text-primary);
-        }
-
-        .header-actions .btn-link.primary {
-            color: var(--text-link);
-        }
-
-        .header-actions .btn-link.primary:hover {
-            background: rgba(43, 108, 255, 0.10);
-        }
-
+        .header-actions .btn-link:hover { background: var(--bg-btn-secondary); color: var(--text-primary); }
+        .header-actions .btn-link.primary { color: var(--text-link); }
+        .header-actions .btn-link.primary:hover { background: rgba(43,108,255,0.10); }
         .theme-toggle {
-            background: var(--bg-btn-secondary);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
+            background: var(--bg-btn-secondary); border: none; width: 40px; height: 40px;
+            border-radius: 50%; font-size: 18px; cursor: pointer;
             transition: background var(--transition), transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             color: var(--text-primary);
         }
-
-        .theme-toggle:hover {
-            background: var(--bg-btn-secondary-hover);
-            transform: scale(1.05);
-        }
-
-        /* ================================================================
-           STATS CARDS
-           ================================================================ */
+        .theme-toggle:hover { background: var(--bg-btn-secondary-hover); transform: scale(1.05); }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 12px;
             margin-bottom: 24px;
         }
-
         .stat-card {
             background: var(--bg-card);
             border-radius: var(--radius-card);
@@ -239,108 +132,36 @@
             transition: background var(--transition), box-shadow var(--transition), transform 0.2s;
             text-align: center;
         }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .stat-card .stat-label {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-            transition: color var(--transition);
-        }
-
-        .stat-card .stat-value {
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--text-primary);
-            transition: color var(--transition);
-        }
-
-        .stat-card .stat-value .small {
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--text-secondary);
-            margin-left: 4px;
-        }
-
-        .stat-card.accent .stat-value {
-            color: var(--text-link);
-        }
-
-        /* ================================================================
-           ADD FORM (переработана)
-           ================================================================ */
-        .add-section {
-            margin-bottom: 24px;
-        }
-
-        .add-form-wrap {
-            background: var(--bg-card);
-            border-radius: var(--radius-card);
-            box-shadow: var(--shadow-card);
-            padding: 24px;
-            transition: background var(--transition), box-shadow var(--transition);
-        }
-
-        .add-form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px 24px;
-        }
-
-        .add-form-grid .field-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .add-form-grid .field-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: color var(--transition);
-        }
-
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        .stat-card .stat-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-secondary); margin-bottom:4px; transition:color var(--transition); }
+        .stat-card .stat-value { font-size:26px; font-weight:700; color:var(--text-primary); transition:color var(--transition); }
+        .stat-card .stat-value .small { font-size:14px; font-weight:400; color:var(--text-secondary); margin-left:4px; }
+        .stat-card.accent .stat-value { color:var(--text-link); }
+        .add-section { margin-bottom:24px; }
+        .add-form-wrap { background:var(--bg-card); border-radius:var(--radius-card); box-shadow:var(--shadow-card); padding:24px; transition:background var(--transition), box-shadow var(--transition); }
+        .add-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px 24px; }
+        .add-form-grid .field-group { display:flex; flex-direction:column; gap:4px; }
+        .add-form-grid .field-group label { font-size:13px; font-weight:600; color:var(--text-secondary); transition:color var(--transition); }
         .add-form-grid .field-group select,
         .add-form-grid .field-group input {
-            padding: 12px 14px;
-            border: 2px solid var(--border-input);
-            border-radius: var(--radius-input);
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-primary);
-            background: var(--bg-input);
-            transition: border-color var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
-            outline: none;
-            width: 100%;
-            appearance: auto;
+            padding:12px 14px; border:2px solid var(--border-input); border-radius:var(--radius-input);
+            font-size:15px; font-weight:500; color:var(--text-primary); background:var(--bg-input);
+            transition:border-color var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
+            outline:none; width:100%; appearance:auto;
         }
-
         .add-form-grid .field-group select:focus,
         .add-form-grid .field-group input:focus {
-            border-color: var(--text-link);
-            box-shadow: 0 0 0 4px rgba(43, 108, 255, 0.12);
+            border-color:var(--text-link);
+            box-shadow:0 0 0 4px rgba(43,108,255,0.12);
         }
-
         .add-form-grid .field-group select {
-            cursor: pointer;
+            cursor:pointer;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235e6f8d' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 40px;
+            background-repeat:no-repeat; background-position:right 14px center; padding-right:40px;
         }
-
         [data-theme="dark"] .add-form-grid .field-group select {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238fa0bb' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
         }
-
-        /* Info cards in form */
         .form-info-grid {
             grid-column: 1 / -1;
             display: grid;
@@ -348,7 +169,6 @@
             gap: 12px;
             margin-top: 4px;
         }
-
         .form-info-item {
             background: var(--bg-input-alt);
             border-radius: var(--radius-input);
@@ -356,166 +176,48 @@
             text-align: center;
             transition: background var(--transition);
         }
-
-        .form-info-item .info-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: var(--text-secondary);
-            transition: color var(--transition);
-        }
-
-        .form-info-item .info-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-top: 2px;
-            transition: color var(--transition);
-        }
-
-        .form-info-item.danger .info-value {
-            color: #e74c3c;
-        }
-
+        .form-info-item .info-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-secondary); transition:color var(--transition); }
+        .form-info-item .info-value { font-size:18px; font-weight:700; color:var(--text-primary); margin-top:2px; transition:color var(--transition); }
+        .form-info-item.danger .info-value { color:#e74c3c; }
         .form-info-item .no-dop-badge {
-            display: inline-block;
-            background: #fee8e8;
-            color: #b33a3a;
-            font-weight: 600;
-            font-size: 13px;
-            padding: 4px 14px;
-            border-radius: 20px;
-            margin-top: 2px;
+            display:inline-block; background:#fee8e8; color:#b33a3a; font-weight:600; font-size:13px;
+            padding:4px 14px; border-radius:20px; margin-top:2px;
         }
-
-        [data-theme="dark"] .form-info-item .no-dop-badge {
-            background: #3d1a1a;
-            color: #ff6b6b;
-        }
-
-        /* Add button */
-        .add-btn-wrap {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 4px;
-        }
-
+        [data-theme="dark"] .form-info-item .no-dop-badge { background:#3d1a1a; color:#ff6b6b; }
+        .add-btn-wrap { grid-column:1/-1; display:flex; justify-content:flex-end; margin-top:4px; }
         .btn-add {
-            background: var(--bg-btn-primary);
-            color: var(--text-inverse);
-            border: none;
-            padding: 12px 36px;
-            border-radius: var(--radius-btn);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background var(--transition), transform 0.2s, opacity 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 48px;
+            background:var(--bg-btn-primary); color:var(--text-inverse); border:none;
+            padding:12px 36px; border-radius:var(--radius-btn); font-size:16px; font-weight:600;
+            cursor:pointer; transition:background var(--transition), transform 0.2s, opacity 0.2s;
+            display:inline-flex; align-items:center; gap:8px; min-height:48px;
         }
-
-        .btn-add:hover:not(:disabled) {
-            background: var(--bg-btn-primary-hover);
-            transform: scale(1.02);
-        }
-
-        .btn-add:active:not(:disabled) {
-            transform: scale(0.97);
-        }
-
-        .btn-add:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* ================================================================
-           ACTIONS BAR
-           ================================================================ */
+        .btn-add:hover:not(:disabled) { background:var(--bg-btn-primary-hover); transform:scale(1.02); }
+        .btn-add:active:not(:disabled) { transform:scale(0.97); }
+        .btn-add:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
         .actions-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 18px;
-            align-items: center;
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; align-items: center;
         }
-
         .actions-bar .btn {
-            background: var(--bg-btn-secondary);
-            color: var(--text-primary);
-            border: none;
-            padding: 8px 18px;
-            border-radius: var(--radius-btn);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background var(--transition), color var(--transition), transform 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            min-height: 40px;
+            background: var(--bg-btn-secondary); color: var(--text-primary); border: none;
+            padding: 8px 18px; border-radius: var(--radius-btn); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: background var(--transition), color var(--transition), transform 0.2s;
+            display: inline-flex; align-items: center; gap: 6px; min-height: 40px;
         }
-
-        .actions-bar .btn:hover {
-            background: var(--bg-btn-secondary-hover);
-            transform: translateY(-1px);
-        }
-
-        .actions-bar .btn:active {
-            transform: scale(0.97);
-        }
-
-        .actions-bar .btn-primary {
-            background: var(--bg-btn-primary);
-            color: var(--text-inverse);
-        }
-
-        .actions-bar .btn-primary:hover {
-            background: var(--bg-btn-primary-hover);
-        }
-
-        .actions-bar .btn-danger {
-            background: var(--bg-btn-danger);
-            color: #b33a3a;
-        }
-
-        .actions-bar .btn-danger:hover {
-            background: var(--bg-btn-danger-hover);
-            color: #a00000;
-        }
-
-        [data-theme="dark"] .actions-bar .btn-danger {
-            color: #ff6b6b;
-        }
-        [data-theme="dark"] .actions-bar .btn-danger:hover {
-            color: #ff8888;
-        }
-
+        .actions-bar .btn:hover { background: var(--bg-btn-secondary-hover); transform: translateY(-1px); }
+        .actions-bar .btn:active { transform: scale(0.97); }
+        .actions-bar .btn-primary { background: var(--bg-btn-primary); color: var(--text-inverse); }
+        .actions-bar .btn-primary:hover { background: var(--bg-btn-primary-hover); }
+        .actions-bar .btn-danger { background: var(--bg-btn-danger); color: #b33a3a; }
+        .actions-bar .btn-danger:hover { background: var(--bg-btn-danger-hover); color: #a00000; }
+        [data-theme="dark"] .actions-bar .btn-danger { color: #ff6b6b; }
+        [data-theme="dark"] .actions-bar .btn-danger:hover { color: #ff8888; }
         .actions-bar .export-select {
-            padding: 8px 14px;
-            border-radius: var(--radius-btn);
-            border: 2px solid var(--border-input);
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: 14px;
-            font-weight: 500;
-            outline: none;
-            cursor: pointer;
-            transition: border-color var(--transition), background var(--transition), color var(--transition);
+            padding: 8px 14px; border-radius: var(--radius-btn); border: 2px solid var(--border-input);
+            background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-weight: 500;
+            outline: none; cursor: pointer; transition: border-color var(--transition), background var(--transition), color var(--transition);
             min-height: 40px;
         }
-
-        .actions-bar .export-select:focus {
-            border-color: var(--text-link);
-        }
-
-        /* ================================================================
-           TABLE
-           ================================================================ */
+        .actions-bar .export-select:focus { border-color: var(--text-link); }
         .table-wrap {
             overflow-x: auto;
             border-radius: var(--radius-table);
@@ -525,7 +227,6 @@
             -webkit-overflow-scrolling: touch;
             margin-bottom: 18px;
         }
-
         table.boss-table {
             width: 100%;
             border-collapse: collapse;
@@ -534,7 +235,6 @@
             background: var(--bg-card);
             transition: background var(--transition);
         }
-
         table.boss-table thead th {
             background: var(--bg-table-header);
             color: var(--text-secondary);
@@ -551,20 +251,16 @@
             z-index: 2;
             transition: background var(--transition), color var(--transition), border-color var(--transition);
         }
-
         table.boss-table tbody tr {
             background: var(--bg-table-row);
             transition: background var(--transition);
         }
-
         table.boss-table tbody tr:nth-child(even) {
             background: var(--bg-table-row-alt);
         }
-
         table.boss-table tbody tr:hover {
             background: var(--bg-card-hover);
         }
-
         table.boss-table td {
             padding: 8px 6px;
             border-bottom: 1px solid var(--border-color);
@@ -573,7 +269,6 @@
             vertical-align: middle;
             transition: border-color var(--transition), color var(--transition);
         }
-
         table.boss-table td input,
         table.boss-table td select {
             width: 100%;
@@ -589,20 +284,17 @@
             text-align: center;
             min-height: 34px;
         }
-
         table.boss-table td input:focus,
         table.boss-table td select:focus {
             border-color: var(--text-link);
-            box-shadow: 0 0 0 3px rgba(43, 108, 255, 0.10);
+            box-shadow: 0 0 0 3px rgba(43,108,255,0.10);
         }
-
         table.boss-table td input[readonly] {
             background: var(--bg-input-alt);
             border-color: var(--border-color);
             cursor: default;
             font-weight: 600;
         }
-
         table.boss-table td .del-btn {
             background: var(--bg-btn-danger);
             border: none;
@@ -614,21 +306,17 @@
             cursor: pointer;
             transition: background var(--transition), color var(--transition), transform 0.2s;
         }
-
         table.boss-table td .del-btn:hover {
             background: var(--bg-btn-danger-hover);
             color: #a00000;
             transform: scale(1.05);
         }
-
         [data-theme="dark"] table.boss-table td .del-btn {
             color: #ff6b6b;
         }
         [data-theme="dark"] table.boss-table td .del-btn:hover {
             color: #ff8888;
         }
-
-        /* Total row */
         .total-row td {
             background: var(--bg-total) !important;
             color: var(--text-inverse) !important;
@@ -638,14 +326,9 @@
             padding: 12px 8px;
             transition: background var(--transition), color var(--transition);
         }
-
         .total-row td .total-label {
             color: rgba(255,255,255,0.7);
         }
-
-        /* ================================================================
-           EMPTY STATE
-           ================================================================ */
         .empty-message {
             text-align: center;
             padding: 40px 20px;
@@ -656,10 +339,6 @@
             box-shadow: var(--shadow-card);
             transition: background var(--transition), color var(--transition), box-shadow var(--transition);
         }
-
-        /* ================================================================
-           GUIDE (инструкция)
-           ================================================================ */
         .guide {
             margin-top: 28px;
             padding: 20px 24px;
@@ -669,42 +348,11 @@
             box-shadow: var(--shadow-card);
             transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
         }
-
-        .guide h3 {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            transition: color var(--transition);
-        }
-
-        .guide p {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-            transition: color var(--transition);
-        }
-
-        .guide ul {
-            padding-left: 20px;
-            font-size: 14px;
-            line-height: 1.7;
-            color: var(--text-secondary);
-            transition: color var(--transition);
-        }
-
-        .guide ul li {
-            margin-bottom: 3px;
-        }
-
-        .guide strong {
-            color: var(--text-primary);
-        }
-
-        /* ================================================================
-           TOAST
-           ================================================================ */
+        .guide h3 { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:10px; transition:color var(--transition); }
+        .guide p { font-size:14px; line-height:1.6; color:var(--text-secondary); margin-bottom:6px; transition:color var(--transition); }
+        .guide ul { padding-left:20px; font-size:14px; line-height:1.7; color:var(--text-secondary); transition:color var(--transition); }
+        .guide ul li { margin-bottom:3px; }
+        .guide strong { color:var(--text-primary); }
         .toast {
             position: fixed;
             bottom: 30px;
@@ -726,166 +374,49 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        @media (max-width:1024px) { .add-form-grid { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding:12px 8px; }
+            .app-header { padding:12px 16px; flex-direction:column; align-items:stretch; gap:12px; }
+            .logo-area { justify-content:center; }
+            .header-actions { justify-content:center; }
+            .add-form-grid { grid-template-columns:1fr; gap:14px; }
+            .form-info-grid { grid-template-columns:1fr 1fr; }
+            .add-btn-wrap { justify-content:center; }
+            .btn-add { width:100%; justify-content:center; }
+            .stats-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+            .stat-card .stat-value { font-size:20px; }
+            .actions-bar { flex-direction:column; align-items:stretch; }
+            .actions-bar .btn, .actions-bar .export-select { justify-content:center; width:100%; }
+            table.boss-table { font-size:11px; min-width:900px; }
+            table.boss-table th, table.boss-table td { padding:6px 4px; }
+            table.boss-table td input, table.boss-table td select { font-size:11px; padding:4px 4px; min-height:28px; }
+            .guide { padding:16px 14px; }
         }
-
-        /* ================================================================
-           RESPONSIVE
-           ================================================================ */
-        @media (max-width: 1024px) {
-            .add-form-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+        @media (max-width:480px) {
+            .logo-text .title { font-size:18px; }
+            .logo-text .sub { font-size:11px; }
+            .logo-icon { width:36px; height:36px; font-size:16px; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:6px; }
+            .stat-card { padding:12px 10px; }
+            .stat-card .stat-value { font-size:18px; }
+            .stat-card .stat-label { font-size:10px; }
+            .form-info-grid { grid-template-columns:1fr 1fr; }
+            .form-info-item .info-value { font-size:15px; }
+            .add-form-wrap { padding:16px; }
+            .header-actions .btn-link { font-size:12px; padding:4px 10px; }
+            table.boss-table { font-size:10px; min-width:750px; }
+            .guide p, .guide ul { font-size:13px; }
         }
-
-        @media (max-width: 768px) {
-            body { padding: 12px 8px; }
-
-            .app-header {
-                padding: 12px 16px;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-
-            .logo-area {
-                justify-content: center;
-            }
-
-            .header-actions {
-                justify-content: center;
-            }
-
-            .header-actions .btn-link {
-                font-size: 13px;
-                padding: 4px 12px;
-            }
-
-            .add-form-grid {
-                grid-template-columns: 1fr;
-                gap: 14px;
-            }
-
-            .form-info-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .add-btn-wrap {
-                justify-content: center;
-            }
-
-            .btn-add {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-
-            .stat-card .stat-value {
-                font-size: 20px;
-            }
-
-            .actions-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .actions-bar .btn,
-            .actions-bar .export-select {
-                justify-content: center;
-                width: 100%;
-            }
-
-            table.boss-table {
-                font-size: 11px;
-                min-width: 900px;
-            }
-
-            table.boss-table th,
-            table.boss-table td {
-                padding: 6px 4px;
-            }
-
-            table.boss-table td input,
-            table.boss-table td select {
-                font-size: 11px;
-                padding: 4px 4px;
-                min-height: 28px;
-            }
-
-            .guide {
-                padding: 16px 14px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo-text .title {
-                font-size: 18px;
-            }
-            .logo-text .sub {
-                font-size: 11px;
-            }
-            .logo-icon {
-                width: 36px;
-                height: 36px;
-                font-size: 16px;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 6px;
-            }
-            .stat-card {
-                padding: 12px 10px;
-            }
-            .stat-card .stat-value {
-                font-size: 18px;
-            }
-            .stat-card .stat-label {
-                font-size: 10px;
-            }
-            .form-info-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .form-info-item .info-value {
-                font-size: 15px;
-            }
-            .add-form-wrap {
-                padding: 16px;
-            }
-            .header-actions .btn-link {
-                font-size: 12px;
-                padding: 4px 10px;
-            }
-            table.boss-table {
-                font-size: 10px;
-                min-width: 750px;
-            }
-            .guide p, .guide ul {
-                font-size: 13px;
-            }
-        }
-
-        /* ================================================================
-           UTILITY - hide file input
-           ================================================================ */
-        #fileInput {
-            display: none;
-        }
+        #fileInput { display:none; }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-    <!-- ============================================================
-    HEADER
-    ============================================================ -->
+    <!-- HEADER -->
     <header class="app-header">
         <div class="logo-area">
             <div class="logo-icon">👊</div>
@@ -897,37 +428,19 @@
         <div class="header-actions">
             <a href="https://t.me/dopkiru" target="_blank" class="btn-link primary">📢 Канал</a>
             <a href="https://t.me/dopkicom" target="_blank" class="btn-link primary">💬 Чат</a>
-            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
-                🌙
-            </button>
+            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">🌙</button>
         </div>
     </header>
 
-    <!-- ============================================================
-    STATS
-    ============================================================ -->
+    <!-- STATS -->
     <div class="stats-grid" id="statsGrid">
-        <div class="stat-card">
-            <div class="stat-label">Всего боссов</div>
-            <div class="stat-value" id="statBosses">0</div>
-        </div>
-        <div class="stat-card accent">
-            <div class="stat-label">Общий урон</div>
-            <div class="stat-value" id="statTotalDmg">0</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Доп. наград</div>
-            <div class="stat-value" id="statExtraTatu">0</div>
-        </div>
-        <div class="stat-card accent">
-            <div class="stat-label">Всего тату</div>
-            <div class="stat-value" id="statAllTatu">0</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Всего боссов</div><div class="stat-value" id="statBosses">0</div></div>
+        <div class="stat-card accent"><div class="stat-label">Общий урон</div><div class="stat-value" id="statTotalDmg">0</div></div>
+        <div class="stat-card"><div class="stat-label">Доп. наград</div><div class="stat-value" id="statExtraTatu">0</div></div>
+        <div class="stat-card accent"><div class="stat-label">Всего тату</div><div class="stat-value" id="statAllTatu">0</div></div>
     </div>
 
-    <!-- ============================================================
-    ADD FORM
-    ============================================================ -->
+    <!-- ADD FORM -->
     <section class="add-section">
         <div class="add-form-wrap">
             <form class="add-form-grid" id="addForm" autocomplete="off">
@@ -935,73 +448,43 @@
                     <label for="bossSelect">Босс</label>
                     <select id="bossSelect"></select>
                 </div>
-
                 <div class="field-group">
                     <label for="modeSelect">Режим</label>
-                    <select id="modeSelect">
-                        <option value="1">Пацанский (×1)</option>
-                        <option value="3">Блатной (×3)</option>
-                        <option value="6">Авторитетный (×6)</option>
-                        <option value="12">Воровской (×12)</option>
-                    </select>
+                    <select id="modeSelect"></select>
                 </div>
-
                 <div class="field-group">
                     <label for="tatuSelect">Доп. наград за нападение</label>
                     <select id="tatuSelect"></select>
-                    <div id="noDopMessage" style="display:none; font-size:13px; color:#b33a3a; font-weight:600; margin-top:4px;">
-                        ⚠️ Нет доп. наград
-                    </div>
+                    <div id="noDopMessage" style="display:none; font-size:13px; color:#b33a3a; font-weight:600; margin-top:4px;">⚠️ Нет доп. наград</div>
                 </div>
-
                 <div class="field-group">
                     <label for="attackLimitInput">Лимит нападений</label>
                     <input type="number" id="attackLimitInput" value="9" min="1" step="1">
                 </div>
-
                 <div class="form-info-grid" id="formInfoGrid">
-                    <div class="form-info-item">
-                        <div class="info-label">HP</div>
-                        <div class="info-value" id="displayBaseHp">0</div>
-                    </div>
-                    <div class="form-info-item">
-                        <div class="info-label">Урон на допку</div>
-                        <div class="info-value" id="displayDmgPerTatu">0</div>
-                    </div>
-                    <div class="form-info-item">
-                        <div class="info-label">Максимум допок</div>
-                        <div class="info-value" id="displayMaxTatu">0</div>
-                    </div>
+                    <div class="form-info-item"><div class="info-label">HP</div><div class="info-value" id="displayBaseHp">0</div></div>
+                    <div class="form-info-item"><div class="info-label">Урон на допку</div><div class="info-value" id="displayDmgPerTatu">0</div></div>
+                    <div class="form-info-item"><div class="info-label">Максимум допок</div><div class="info-value" id="displayMaxTatu">0</div></div>
                     <div class="form-info-item danger" id="noDopCard" style="display:none;">
                         <div class="info-label">Статус</div>
                         <div class="info-value"><span class="no-dop-badge">❌ Доп. награды отсутствуют</span></div>
                     </div>
                 </div>
-
-                <div class="add-btn-wrap">
-                    <button type="button" class="btn-add" id="addBtn">➕ Добавить босса</button>
-                </div>
+                <div class="add-btn-wrap"><button type="button" class="btn-add" id="addBtn">➕ Добавить босса</button></div>
             </form>
         </div>
     </section>
 
-    <!-- ============================================================
-    ACTIONS BAR
-    ============================================================ -->
+    <!-- ACTIONS -->
     <div class="actions-bar">
-        <select class="export-select" id="exportFormat">
-            <option value="tsv">TSV (для Excel)</option>
-            <option value="xls" selected>Excel (.xls)</option>
-        </select>
+        <select class="export-select" id="exportFormat"><option value="tsv">TSV (для Excel)</option><option value="xls" selected>Excel (.xls)</option></select>
         <button class="btn btn-primary" id="exportBtn">📄 Экспорт</button>
         <button class="btn btn-primary" id="importBtn">📂 Импорт</button>
         <button class="btn btn-danger" id="clearBtn">🗑 Очистить всё</button>
         <input type="file" id="fileInput" accept=".tsv,.csv,.txt,.xls">
     </div>
 
-    <!-- ============================================================
-    TABLE
-    ============================================================ -->
+    <!-- TABLE -->
     <div class="table-wrap">
         <table class="boss-table" id="bossTable">
             <thead>
@@ -1024,9 +507,7 @@
             <tbody id="tableBody"></tbody>
             <tfoot id="tableFoot" style="display:none;">
                 <tr class="total-row">
-                    <td colspan="7" style="text-align:right; padding-right:16px;">
-                        <span class="total-label">ИТОГО:</span>
-                    </td>
+                    <td colspan="7" style="text-align:right; padding-right:16px;"><span class="total-label">ИТОГО:</span></td>
                     <td></td>
                     <td id="totalDmg">0</td>
                     <td id="totalExtraTatu">0</td>
@@ -1038,16 +519,10 @@
         </table>
     </div>
 
-    <!-- ============================================================
-    EMPTY STATE
-    ============================================================ -->
-    <div id="emptyMessage" class="empty-message">
-        Нет добавленных боссов. Добавьте первого!
-    </div>
+    <!-- EMPTY -->
+    <div id="emptyMessage" class="empty-message">Нет добавленных боссов. Добавьте первого!</div>
 
-    <!-- ============================================================
-    GUIDE
-    ============================================================ -->
+    <!-- GUIDE -->
     <div class="guide">
         <h3>📖 Как пользоваться калькулятором</h3>
         <p><strong>1. Добавление босса:</strong> Выберите босса из списка, затем режим. Количество допок выбирается автоматически из доступных вариантов. Если режим не даёт допок, кнопка добавления будет заблокирована.</p>
@@ -1145,11 +620,20 @@
                 '6': { dmg: 25000000, max: 3 },
                 '12': { dmg: null, max: 0 }
             }
+        },
+        'Гвоздь': {
+            hp: 25000000000,
+            modes: {
+                '1': { dmg: null, max: 0 },
+                '3': { dmg: 50000000, max: 3 },
+                '6': { dmg: 70000000, max: 4 },
+                '12': { dmg: null, max: 0 }   // <-- добавлен Воровской без допок
+            }
         }
     };
 
     // ================================================================
-    // 2. DOM-ЭЛЕМЕНТЫ
+    // 2. DOM
     // ================================================================
     const form = document.getElementById('addForm');
     const bossSelect = document.getElementById('bossSelect');
@@ -1162,7 +646,6 @@
     const noDopMessage = document.getElementById('noDopMessage');
     const noDopCard = document.getElementById('noDopCard');
     const addBtn = document.getElementById('addBtn');
-
     const tableBody = document.getElementById('tableBody');
     const tableFoot = document.getElementById('tableFoot');
     const emptyMessage = document.getElementById('emptyMessage');
@@ -1170,21 +653,16 @@
     const totalExtraTatu = document.getElementById('totalExtraTatu');
     const totalWinTatu = document.getElementById('totalWinTatu');
     const totalAllTatu = document.getElementById('totalAllTatu');
-
     const exportBtn = document.getElementById('exportBtn');
     const importBtn = document.getElementById('importBtn');
     const clearBtn = document.getElementById('clearBtn');
     const fileInput = document.getElementById('fileInput');
     const toast = document.getElementById('toast');
     const exportFormat = document.getElementById('exportFormat');
-
-    // Stats
     const statBosses = document.getElementById('statBosses');
     const statTotalDmg = document.getElementById('statTotalDmg');
     const statExtraTatu = document.getElementById('statExtraTatu');
     const statAllTatu = document.getElementById('statAllTatu');
-
-    // Theme
     const themeToggle = document.getElementById('themeToggle');
 
     // ================================================================
@@ -1231,34 +709,21 @@
     }
 
     // ================================================================
-    // 5. ТЕМНАЯ ТЕМА
+    // 5. ТЕМА
     // ================================================================
-    function getTheme() {
-        return document.documentElement.getAttribute('data-theme') || 'light';
-    }
-
+    function getTheme() { return document.documentElement.getAttribute('data-theme') || 'light'; }
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
         localStorage.setItem('dopkiTheme', theme);
     }
-
-    function toggleTheme() {
-        const current = getTheme();
-        setTheme(current === 'dark' ? 'light' : 'dark');
-    }
-
+    function toggleTheme() { setTheme(getTheme() === 'dark' ? 'light' : 'dark'); }
     function loadTheme() {
         const saved = localStorage.getItem('dopkiTheme');
-        if (saved) {
-            setTheme(saved);
-        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setTheme('dark');
-        } else {
-            setTheme('light');
-        }
+        if (saved) setTheme(saved);
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+        else setTheme('light');
     }
-
     themeToggle.addEventListener('click', toggleTheme);
 
     // ================================================================
@@ -1266,10 +731,59 @@
     // ================================================================
     function updateForm() {
         const bossName = bossSelect.value;
+        const bossData = BOSSES[bossName];
+        if (!bossData) {
+            displayBaseHp.textContent = '0';
+            displayDmgPerTatu.textContent = '0';
+            displayMaxTatu.textContent = '0';
+            tatuSelect.innerHTML = '';
+            noDopMessage.style.display = 'none';
+            noDopCard.style.display = 'none';
+            addBtn.disabled = true;
+            modeSelect.innerHTML = '<option value="">— Нет босса —</option>';
+            return;
+        }
+
+        // 1. Обновляем список доступных режимов
+        const availableModes = Object.keys(bossData.modes).sort((a,b) => parseInt(a)-parseInt(b));
+        modeSelect.innerHTML = '';
+        if (availableModes.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '— Нет режимов —';
+            modeSelect.appendChild(opt);
+            displayBaseHp.textContent = fmt(bossData.hp);
+            displayDmgPerTatu.textContent = '—';
+            displayMaxTatu.textContent = '0';
+            tatuSelect.innerHTML = '';
+            noDopMessage.style.display = 'block';
+            noDopCard.style.display = 'block';
+            addBtn.disabled = true;
+            return;
+        }
+        availableModes.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = MODES[m].label + ' (×' + MODES[m].multiplier + ')';
+            modeSelect.appendChild(opt);
+        });
+        // Выбираем первый доступный (или сохраняем текущий, если он ещё доступен)
+        const currentMode = modeSelect.value;
+        if (availableModes.includes(currentMode)) {
+            modeSelect.value = currentMode;
+        } else {
+            modeSelect.value = availableModes[0];
+        }
+
+        // 2. Обновляем информацию о выбранном режиме
+        updateModeInfo();
+    }
+
+    function updateModeInfo() {
+        const bossName = bossSelect.value;
         const mode = modeSelect.value;
         const bossData = BOSSES[bossName];
-
-        if (!bossData) {
+        if (!bossData || !mode) {
             displayBaseHp.textContent = '0';
             displayDmgPerTatu.textContent = '0';
             displayMaxTatu.textContent = '0';
@@ -1280,30 +794,30 @@
             return;
         }
 
-        const baseHp = bossData.hp;
-        displayBaseHp.textContent = fmt(baseHp);
-
         const modeData = bossData.modes[mode];
         if (!modeData) {
-            displayDmgPerTatu.textContent = '0';
+            displayBaseHp.textContent = fmt(bossData.hp);
+            displayDmgPerTatu.textContent = '—';
             displayMaxTatu.textContent = '0';
             tatuSelect.innerHTML = '';
-            noDopMessage.style.display = 'none';
-            noDopCard.style.display = 'none';
+            noDopMessage.style.display = 'block';
+            noDopCard.style.display = 'block';
             addBtn.disabled = true;
             return;
         }
 
+        displayBaseHp.textContent = fmt(bossData.hp);
         const dmg = modeData.dmg;
         const max = modeData.max;
+        const thresholds = modeData.thresholds;
 
-        // Для Змея в режиме 6 показываем первый порог
-        if (bossName === 'Змей' && mode === '6' && modeData.thresholds) {
-            displayDmgPerTatu.textContent = fmt(modeData.thresholds[1] || 0);
+        if (thresholds && thresholds.length > 1) {
+            displayDmgPerTatu.textContent = fmt(thresholds[1]) + ' (пороги)';
         } else {
             displayDmgPerTatu.textContent = dmg !== null ? fmt(dmg) : 'нет';
         }
-        displayMaxTatu.textContent = max;
+
+        displayMaxTatu.textContent = max || 0;
 
         tatuSelect.innerHTML = '';
         if (max > 0 && dmg !== null) {
@@ -1324,12 +838,16 @@
         }
     }
 
+    // ================================================================
+    // 7. ЗАПОЛНЕНИЕ СПИСКА БОССОВ (сортировка по HP)
+    // ================================================================
     function populateBossSelect() {
         bossSelect.innerHTML = '';
-        Object.keys(BOSSES).forEach(name => {
+        const names = Object.keys(BOSSES).sort((a, b) => BOSSES[a].hp - BOSSES[b].hp);
+        names.forEach(name => {
             const opt = document.createElement('option');
             opt.value = name;
-            opt.textContent = name;
+            opt.textContent = name + ' (HP ' + fmt(BOSSES[name].hp) + ')';
             bossSelect.appendChild(opt);
         });
         if (bossSelect.options.length > 0) {
@@ -1339,10 +857,10 @@
     }
 
     bossSelect.addEventListener('change', updateForm);
-    modeSelect.addEventListener('change', updateForm);
+    modeSelect.addEventListener('change', updateModeInfo);
 
     // ================================================================
-    // 7. ДОБАВЛЕНИЕ БОССА
+    // 8. ДОБАВЛЕНИЕ БОССА
     // ================================================================
     function addFromForm() {
         const bossName = bossSelect.value;
@@ -1373,7 +891,7 @@
     });
 
     // ================================================================
-    // 8. ОСНОВНЫЕ ФУНКЦИИ
+    // 9. ОСНОВНЫЕ ФУНКЦИИ (без изменений)
     // ================================================================
     function addBoss(name, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit) {
         const effectiveHp = baseHp * getModeMultiplier(mode);
@@ -1416,15 +934,13 @@
             showToast('🗑 Все данные очищены');
         }
     }
-
     clearBtn.addEventListener('click', clearAll);
 
     // ================================================================
-    // 9. СТАТИСТИКА
+    // 10. СТАТИСТИКА
     // ================================================================
     function updateStats() {
         statBosses.textContent = bosses.length;
-
         let sumDmg = 0, sumExtra = 0, sumAll = 0;
         bosses.forEach(boss => {
             let dmgPerAttack;
@@ -1441,11 +957,9 @@
             sumExtra += extraTatu;
             sumAll += allTatu;
         });
-
         statTotalDmg.textContent = fmt(sumDmg);
         statExtraTatu.textContent = fmt(sumExtra);
         statAllTatu.textContent = fmt(sumAll);
-
         document.getElementById('totalDmg').textContent = fmt(sumDmg);
         document.getElementById('totalExtraTatu').textContent = fmt(sumExtra);
         document.getElementById('totalWinTatu').textContent = fmt(sumDmg > 0 ? bosses.reduce((s, b) => s + b.attackLimit, 0) : 0);
@@ -1453,7 +967,7 @@
     }
 
     // ================================================================
-    // 10. РЕНДЕР ТАБЛИЦЫ
+    // 11. РЕНДЕР ТАБЛИЦЫ
     // ================================================================
     function renderTable() {
         if (bosses.length === 0) {
@@ -1490,15 +1004,13 @@
             html += `<td><input type="text" class="edit-basehp" value="${fmt(boss.baseHp)}" data-id="${boss.id}"></td>`;
             html += `<td>
                         <select class="edit-mode" data-id="${boss.id}">
-                            <option value="1" ${boss.mode == 1 ? 'selected' : ''}>Пацанский (×1)</option>
-                            <option value="3" ${boss.mode == 3 ? 'selected' : ''}>Блатной (×3)</option>
-                            <option value="6" ${boss.mode == 6 ? 'selected' : ''}>Авторитетный (×6)</option>
-                            <option value="12" ${boss.mode == 12 ? 'selected' : ''}>Воровской (×12)</option>
+                            ${Object.keys(MODES).map(m => 
+                                `<option value="${m}" ${boss.mode == m ? 'selected' : ''}>${MODES[m].label}</option>`
+                            ).join('')}
                         </select>
                     </td>`;
             html += `<td class="eff-hp" style="font-weight:600;">${fmt(boss.effectiveHp)}</td>`;
 
-            // Урон на 1 доп. тату — для Змея readonly с порогом
             const readonlyAttr = isZmei ? 'readonly' : '';
             const titleAttr = isZmei ? `title="Пороги: ${BOSSES['Змей'].modes['6'].thresholds.slice(1).map(fmt).join(' / ')}"` : '';
             html += `<td><input type="text" class="edit-dmg" value="${fmt(displayDmg)}" data-id="${boss.id}" ${readonlyAttr} ${titleAttr}></td>`;
@@ -1515,11 +1027,9 @@
         });
 
         tableBody.innerHTML = html;
-
         tableFoot.style.display = 'table-footer-group';
         updateStats();
 
-        // Обработчики редактирования
         document.querySelectorAll('.edit-name, .edit-basehp, .edit-mode, .edit-dmg, .edit-tatu, .edit-limit')
             .forEach(el => {
                 el.addEventListener('input', handleEdit);
@@ -1535,7 +1045,7 @@
     }
 
     // ================================================================
-    // 11. ОБРАБОТЧИК РЕДАКТИРОВАНИЯ
+    // 12. ОБРАБОТЧИК РЕДАКТИРОВАНИЯ
     // ================================================================
     function handleEdit(e) {
         const target = e.target;
@@ -1561,9 +1071,7 @@
             boss.effectiveHp = boss.baseHp * getModeMultiplier(boss.mode);
             changed = true;
         } else if (cls.includes('edit-dmg')) {
-            // Запрещаем изменение для Змея в режиме 6
             if (isZmei6(boss)) {
-                // Возвращаем правильное значение
                 const thresholds = BOSSES['Змей'].modes['6'].thresholds;
                 const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
                 target.value = fmt(thresholds[idx] || 0);
@@ -1601,7 +1109,7 @@
     }
 
     // ================================================================
-    // 12. LOCALSTORAGE
+    // 13. LOCALSTORAGE
     // ================================================================
     function saveToLocalStorage() {
         const data = { bosses, nextId };
@@ -1625,7 +1133,7 @@
     }
 
     // ================================================================
-    // 13. ЭКСПОРТ / ИМПОРТ
+    // 14. ЭКСПОРТ / ИМПОРТ
     // ================================================================
     function exportTSV() {
         if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
@@ -1736,7 +1244,6 @@
         URL.revokeObjectURL(url);
         showToast(`📄 Экспорт в ${format.toUpperCase()} выполнен`);
     }
-
     exportBtn.addEventListener('click', exportData);
 
     function importFromFile(file) {
@@ -1792,7 +1299,6 @@
                 }
                 if (newBosses.length === 0) { showToast('⚠️ Не найдено данных для импорта'); return; }
 
-                // Корректируем Змея при импорте
                 newBosses = newBosses.map(b => {
                     if (b.name === 'Змей' && b.mode === '6') {
                         const thresholds = BOSSES['Змей'].modes['6'].thresholds;
@@ -1840,7 +1346,6 @@
     // 14. TOAST
     // ================================================================
     let toastTimer = null;
-
     function showToast(msg) {
         toast.textContent = msg;
         toast.classList.add('show');

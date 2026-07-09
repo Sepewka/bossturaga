@@ -2,10 +2,12 @@
 <html lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Dopki.ru — Калькулятор урона по боссам</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>Боссы — Калькулятор + Список</title>
     <style>
-        /* ===== Все стили без изменений (скопированы из вашего файла) ===== */
+        /* ===== ОБЩИЕ СТИЛИ (без изменений) ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         :root {
             --bg-body: #f0f2f5;
             --bg-card: #ffffff;
@@ -70,7 +72,7 @@
             --shadow-card: 0 4px 20px rgba(0,0,0,0.3);
             --shadow-hover: 0 8px 30px rgba(0,0,0,0.4);
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
+
         body {
             font-family: var(--font);
             background: var(--bg-body);
@@ -81,7 +83,9 @@
             display: flex;
             justify-content: center;
         }
-        .container { max-width: 1400px; width: 100%; }
+        .container { max-width: 1600px; width: 100%; }
+
+        /* ===== ШАПКА ===== */
         .app-header {
             display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
             gap: 16px; padding: 12px 20px 12px 24px;
@@ -94,11 +98,17 @@
             width: 42px; height: 42px; border-radius: 12px;
             background: linear-gradient(135deg, #2b6cff, #4a85ff);
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: #fff; font-weight: 700; flex-shrink: 0;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .logo-icon img {
+            width: 100%; height: 100%; object-fit: cover;
+            display: block;
         }
         .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
         .logo-text .title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; transition: color var(--transition); }
         .logo-text .sub { font-size: 13px; font-weight: 400; color: var(--text-secondary); transition: color var(--transition); }
+
         .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .header-actions .btn-link {
             background: none; border: none; color: var(--text-secondary);
@@ -110,6 +120,7 @@
         .header-actions .btn-link:hover { background: var(--bg-btn-secondary); color: var(--text-primary); }
         .header-actions .btn-link.primary { color: var(--text-link); }
         .header-actions .btn-link.primary:hover { background: rgba(43,108,255,0.10); }
+
         .theme-toggle {
             background: var(--bg-btn-secondary); border: none; width: 40px; height: 40px;
             border-radius: 50%; font-size: 18px; cursor: pointer;
@@ -118,107 +129,129 @@
             color: var(--text-primary);
         }
         .theme-toggle:hover { background: var(--bg-btn-secondary-hover); transform: scale(1.05); }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-card);
-            padding: 16px 18px;
+
+        /* ===== ВКЛАДКИ ===== */
+        .tabs {
+            display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+            background: var(--bg-card); padding: 8px 16px; border-radius: var(--radius-card);
             box-shadow: var(--shadow-card);
-            transition: background var(--transition), box-shadow var(--transition), transform 0.2s;
+        }
+        .tab-btn {
+            background: transparent; border: none; padding: 8px 20px;
+            border-radius: var(--radius-btn); font-size: 15px; font-weight: 600;
+            color: var(--text-secondary); cursor: pointer;
+            transition: background var(--transition), color var(--transition);
+        }
+        .tab-btn:hover { background: var(--bg-btn-secondary); color: var(--text-primary); }
+        .tab-btn.active {
+            background: var(--bg-btn-primary); color: var(--text-inverse);
+        }
+        .tab-btn.active:hover { background: var(--bg-btn-primary-hover); }
+
+        .tab-content {
+            display: none;
+            animation: fade 0.3s;
+        }
+        .tab-content.active { display: block; }
+        @keyframes fade { from { opacity: 0.4; } to { opacity: 1; } }
+
+        /* ===== ИЗОЛЯЦИЯ СТИЛЕЙ ДЛЯ КАЖДОГО ТАБА ===== */
+        /* Стили для Калькулятора (префикс #tab-calculator) */
+        #tab-calculator .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px;
+        }
+        #tab-calculator .stat-card {
+            background: var(--bg-card); border-radius: var(--radius-card); padding: 16px 18px;
+            box-shadow: var(--shadow-card); transition: background var(--transition), box-shadow var(--transition), transform 0.2s;
             text-align: center;
         }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-        .stat-card .stat-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-secondary); margin-bottom:4px; transition:color var(--transition); }
-        .stat-card .stat-value { font-size:26px; font-weight:700; color:var(--text-primary); transition:color var(--transition); }
-        .stat-card .stat-value .small { font-size:14px; font-weight:400; color:var(--text-secondary); margin-left:4px; }
-        .stat-card.accent .stat-value { color:var(--text-link); }
-        .add-section { margin-bottom:24px; }
-        .add-form-wrap { background:var(--bg-card); border-radius:var(--radius-card); box-shadow:var(--shadow-card); padding:24px; transition:background var(--transition), box-shadow var(--transition); }
-        .add-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px 24px; }
-        .add-form-grid .field-group { display:flex; flex-direction:column; gap:4px; }
-        .add-form-grid .field-group label { font-size:13px; font-weight:600; color:var(--text-secondary); transition:color var(--transition); }
-        .add-form-grid .field-group select,
-        .add-form-grid .field-group input {
+        #tab-calculator .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        #tab-calculator .stat-card .stat-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-secondary); margin-bottom:4px; transition:color var(--transition); }
+        #tab-calculator .stat-card .stat-value { font-size:26px; font-weight:700; color:var(--text-primary); transition:color var(--transition); }
+        #tab-calculator .stat-card .stat-value .small { font-size:14px; font-weight:400; color:var(--text-secondary); margin-left:4px; }
+        #tab-calculator .stat-card.accent .stat-value { color:var(--text-link); }
+
+        #tab-calculator .add-section { margin-bottom:24px; }
+        #tab-calculator .add-form-wrap { background:var(--bg-card); border-radius:var(--radius-card); box-shadow:var(--shadow-card); padding:24px; transition:background var(--transition), box-shadow var(--transition); }
+        #tab-calculator .add-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px 24px; }
+        #tab-calculator .add-form-grid .field-group { display:flex; flex-direction:column; gap:4px; }
+        #tab-calculator .add-form-grid .field-group label { font-size:13px; font-weight:600; color:var(--text-secondary); transition:color var(--transition); }
+        #tab-calculator .add-form-grid .field-group select,
+        #tab-calculator .add-form-grid .field-group input {
             padding:12px 14px; border:2px solid var(--border-input); border-radius:var(--radius-input);
             font-size:15px; font-weight:500; color:var(--text-primary); background:var(--bg-input);
             transition:border-color var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
-            outline:none; width:100%; appearance:auto;
+            outline:none; width:100%;
         }
-        .add-form-grid .field-group select:focus,
-        .add-form-grid .field-group input:focus {
+        #tab-calculator .add-form-grid .field-group select {
+            appearance: auto;
+            background-image: none;
+            padding-right: 14px;
+        }
+        #tab-calculator .add-form-grid .field-group select:focus,
+        #tab-calculator .add-form-grid .field-group input:focus {
             border-color:var(--text-link);
             box-shadow:0 0 0 4px rgba(43,108,255,0.12);
         }
-        .add-form-grid .field-group select {
-            cursor:pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235e6f8d' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat:no-repeat; background-position:right 14px center; padding-right:40px;
-        }
-        [data-theme="dark"] .add-form-grid .field-group select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238fa0bb' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-        }
-        .form-info-grid {
+        #tab-calculator .form-info-grid {
             grid-column: 1 / -1;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 12px;
             margin-top: 4px;
         }
-        .form-info-item {
+        #tab-calculator .form-info-item {
             background: var(--bg-input-alt);
             border-radius: var(--radius-input);
             padding: 12px 16px;
             text-align: center;
             transition: background var(--transition);
         }
-        .form-info-item .info-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-secondary); transition:color var(--transition); }
-        .form-info-item .info-value { font-size:18px; font-weight:700; color:var(--text-primary); margin-top:2px; transition:color var(--transition); }
-        .form-info-item.danger .info-value { color:#e74c3c; }
-        .form-info-item .no-dop-badge {
+        #tab-calculator .form-info-item .info-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-secondary); transition:color var(--transition); }
+        #tab-calculator .form-info-item .info-value { font-size:18px; font-weight:700; color:var(--text-primary); margin-top:2px; transition:color var(--transition); }
+        #tab-calculator .form-info-item.danger .info-value { color:#e74c3c; }
+        #tab-calculator .form-info-item .no-dop-badge {
             display:inline-block; background:#fee8e8; color:#b33a3a; font-weight:600; font-size:13px;
             padding:4px 14px; border-radius:20px; margin-top:2px;
         }
-        [data-theme="dark"] .form-info-item .no-dop-badge { background:#3d1a1a; color:#ff6b6b; }
-        .add-btn-wrap { grid-column:1/-1; display:flex; justify-content:flex-end; margin-top:4px; }
-        .btn-add {
+        #tab-calculator .add-btn-wrap { grid-column:1/-1; display:flex; justify-content:flex-end; margin-top:4px; }
+        #tab-calculator .btn-add {
             background:var(--bg-btn-primary); color:var(--text-inverse); border:none;
             padding:12px 36px; border-radius:var(--radius-btn); font-size:16px; font-weight:600;
             cursor:pointer; transition:background var(--transition), transform 0.2s, opacity 0.2s;
             display:inline-flex; align-items:center; gap:8px; min-height:48px;
         }
-        .btn-add:hover:not(:disabled) { background:var(--bg-btn-primary-hover); transform:scale(1.02); }
-        .btn-add:active:not(:disabled) { transform:scale(0.97); }
-        .btn-add:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
-        .actions-bar {
+        #tab-calculator .btn-add:hover:not(:disabled) { background:var(--bg-btn-primary-hover); transform:scale(1.02); }
+        #tab-calculator .btn-add:active:not(:disabled) { transform:scale(0.97); }
+        #tab-calculator .btn-add:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+        #tab-calculator .actions-bar {
             display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; align-items: center;
         }
-        .actions-bar .btn {
+        #tab-calculator .actions-bar .btn {
             background: var(--bg-btn-secondary); color: var(--text-primary); border: none;
             padding: 8px 18px; border-radius: var(--radius-btn); font-size: 14px; font-weight: 600;
             cursor: pointer; transition: background var(--transition), color var(--transition), transform 0.2s;
             display: inline-flex; align-items: center; gap: 6px; min-height: 40px;
         }
-        .actions-bar .btn:hover { background: var(--bg-btn-secondary-hover); transform: translateY(-1px); }
-        .actions-bar .btn:active { transform: scale(0.97); }
-        .actions-bar .btn-primary { background: var(--bg-btn-primary); color: var(--text-inverse); }
-        .actions-bar .btn-primary:hover { background: var(--bg-btn-primary-hover); }
-        .actions-bar .btn-danger { background: var(--bg-btn-danger); color: #b33a3a; }
-        .actions-bar .btn-danger:hover { background: var(--bg-btn-danger-hover); color: #a00000; }
-        [data-theme="dark"] .actions-bar .btn-danger { color: #ff6b6b; }
-        [data-theme="dark"] .actions-bar .btn-danger:hover { color: #ff8888; }
-        .actions-bar .export-select {
+        #tab-calculator .actions-bar .btn:hover { background: var(--bg-btn-secondary-hover); transform: translateY(-1px); }
+        #tab-calculator .actions-bar .btn:active { transform: scale(0.97); }
+        #tab-calculator .actions-bar .btn-primary { background: var(--bg-btn-primary); color: var(--text-inverse); }
+        #tab-calculator .actions-bar .btn-primary:hover { background: var(--bg-btn-primary-hover); }
+        #tab-calculator .actions-bar .btn-danger { background: var(--bg-btn-danger); color: #b33a3a; }
+        #tab-calculator .actions-bar .btn-danger:hover { background: var(--bg-btn-danger-hover); color: #a00000; }
+        #tab-calculator .actions-bar .export-select {
             padding: 8px 14px; border-radius: var(--radius-btn); border: 2px solid var(--border-input);
             background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-weight: 500;
             outline: none; cursor: pointer; transition: border-color var(--transition), background var(--transition), color var(--transition);
             min-height: 40px;
+            appearance: auto;
+            background-image: none;
+            padding-right: 14px;
         }
-        .actions-bar .export-select:focus { border-color: var(--text-link); }
-        .table-wrap {
+        #tab-calculator .actions-bar .export-select:focus { border-color: var(--text-link); }
+
+        #tab-calculator .table-wrap {
             overflow-x: auto;
             border-radius: var(--radius-table);
             border: 1px solid var(--border-color);
@@ -227,7 +260,7 @@
             -webkit-overflow-scrolling: touch;
             margin-bottom: 18px;
         }
-        table.boss-table {
+        #tab-calculator table.boss-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
@@ -235,7 +268,7 @@
             background: var(--bg-card);
             transition: background var(--transition);
         }
-        table.boss-table thead th {
+        #tab-calculator table.boss-table thead th {
             background: var(--bg-table-header);
             color: var(--text-secondary);
             font-weight: 700;
@@ -251,17 +284,17 @@
             z-index: 2;
             transition: background var(--transition), color var(--transition), border-color var(--transition);
         }
-        table.boss-table tbody tr {
+        #tab-calculator table.boss-table tbody tr {
             background: var(--bg-table-row);
             transition: background var(--transition);
         }
-        table.boss-table tbody tr:nth-child(even) {
+        #tab-calculator table.boss-table tbody tr:nth-child(even) {
             background: var(--bg-table-row-alt);
         }
-        table.boss-table tbody tr:hover {
+        #tab-calculator table.boss-table tbody tr:hover {
             background: var(--bg-card-hover);
         }
-        table.boss-table td {
+        #tab-calculator table.boss-table td {
             padding: 8px 6px;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-primary);
@@ -269,33 +302,13 @@
             vertical-align: middle;
             transition: border-color var(--transition), color var(--transition);
         }
-        table.boss-table td input,
-        table.boss-table td select {
-            width: 100%;
-            padding: 6px 8px;
-            border: 2px solid var(--border-input);
-            border-radius: 8px;
-            font-size: 13px;
+        /* Текстовые ячейки — без элементов ввода */
+        #tab-calculator table.boss-table td .static-text {
             font-weight: 500;
-            color: var(--text-primary);
-            background: var(--bg-input);
-            transition: border-color var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
-            outline: none;
-            text-align: center;
-            min-height: 34px;
+            padding: 4px 0;
+            display: block;
         }
-        table.boss-table td input:focus,
-        table.boss-table td select:focus {
-            border-color: var(--text-link);
-            box-shadow: 0 0 0 3px rgba(43,108,255,0.10);
-        }
-        table.boss-table td input[readonly] {
-            background: var(--bg-input-alt);
-            border-color: var(--border-color);
-            cursor: default;
-            font-weight: 600;
-        }
-        table.boss-table td .del-btn {
+        #tab-calculator table.boss-table td .del-btn {
             background: var(--bg-btn-danger);
             border: none;
             border-radius: 20px;
@@ -306,30 +319,30 @@
             cursor: pointer;
             transition: background var(--transition), color var(--transition), transform 0.2s;
         }
-        table.boss-table td .del-btn:hover {
+        #tab-calculator table.boss-table td .del-btn:hover {
             background: var(--bg-btn-danger-hover);
             color: #a00000;
             transform: scale(1.05);
         }
-        [data-theme="dark"] table.boss-table td .del-btn {
-            color: #ff6b6b;
-        }
-        [data-theme="dark"] table.boss-table td .del-btn:hover {
-            color: #ff8888;
-        }
-        .total-row td {
+        /* Итоговая строка — одна строка */
+        #tab-calculator .total-row td {
             background: var(--bg-total) !important;
             color: var(--text-inverse) !important;
             font-weight: 700;
             font-size: 14px;
             border-top: 3px solid var(--bg-total);
             padding: 12px 8px;
+            white-space: nowrap;
             transition: background var(--transition), color var(--transition);
         }
-        .total-row td .total-label {
+        #tab-calculator .total-row td .total-label {
             color: rgba(255,255,255,0.7);
         }
-        .empty-message {
+        #tab-calculator .total-row td:first-child {
+            text-align: right;
+            padding-right: 16px;
+        }
+        #tab-calculator .empty-message {
             text-align: center;
             padding: 40px 20px;
             color: var(--text-secondary);
@@ -339,7 +352,7 @@
             box-shadow: var(--shadow-card);
             transition: background var(--transition), color var(--transition), box-shadow var(--transition);
         }
-        .guide {
+        #tab-calculator .guide {
             margin-top: 28px;
             padding: 20px 24px;
             background: var(--bg-card);
@@ -348,12 +361,12 @@
             box-shadow: var(--shadow-card);
             transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
         }
-        .guide h3 { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:10px; transition:color var(--transition); }
-        .guide p { font-size:14px; line-height:1.6; color:var(--text-secondary); margin-bottom:6px; transition:color var(--transition); }
-        .guide ul { padding-left:20px; font-size:14px; line-height:1.7; color:var(--text-secondary); transition:color var(--transition); }
-        .guide ul li { margin-bottom:3px; }
-        .guide strong { color:var(--text-primary); }
-        .toast {
+        #tab-calculator .guide h3 { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:10px; transition:color var(--transition); }
+        #tab-calculator .guide p { font-size:14px; line-height:1.6; color:var(--text-secondary); margin-bottom:6px; transition:color var(--transition); }
+        #tab-calculator .guide ul { padding-left:20px; font-size:14px; line-height:1.7; color:var(--text-secondary); transition:color var(--transition); }
+        #tab-calculator .guide ul li { margin-bottom:3px; }
+        #tab-calculator .guide strong { color:var(--text-primary); }
+        #tab-calculator .toast {
             position: fixed;
             bottom: 30px;
             left: 50%;
@@ -374,52 +387,216 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-        @media (max-width:1024px) { .add-form-grid { grid-template-columns:1fr 1fr; } }
-        @media (max-width:768px) {
-            body { padding:12px 8px; }
-            .app-header { padding:12px 16px; flex-direction:column; align-items:stretch; gap:12px; }
+        #tab-calculator .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        #fileInput { display:none; }
+
+        /* ===== Стили для Списка боссов (префикс #tab-bosslist) ===== */
+        #tab-bosslist .tables-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #tab-bosslist .table-wrapper {
+            flex: 0 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        #tab-bosslist .table-header {
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        #tab-bosslist .table-header .count {
+            font-weight: 400;
+            font-size: 14px;
+            color: #475569;
+        }
+        #tab-bosslist .table-scroll {
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+        #tab-bosslist table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: inherit;
+            min-width: 320px;
+        }
+        #tab-bosslist table th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+            padding: 6px 8px;
+            border-bottom: 1px solid #d1d9e6;
+            text-align: left;
+            white-space: nowrap;
+        }
+        #tab-bosslist table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #e9edf2;
+            text-align: left;
+            white-space: nowrap;
+        }
+        #tab-bosslist table tr:last-child td { border-bottom: none; }
+        #tab-bosslist .col-boss {
+            font-weight: 500;
+            color: #0b2b4a;
+            min-width: 80px;
+        }
+        #tab-bosslist .hp-cell {
+            text-align: right;
+            font-family: 'Segoe UI', monospace;
+            font-size: 13px;
+            padding-right: 10px;
+            min-width: 70px;
+        }
+        #tab-bosslist .hp-cell.empty {
+            background: transparent !important;
+            color: #999;
+        }
+        #tab-bosslist .hp-low   { background: #e6f4e6; }
+        #tab-bosslist .hp-mid   { background: #fff9e6; }
+        #tab-bosslist .hp-high  { background: #ffede0; }
+        #tab-bosslist .hp-vhigh { background: #fce4e4; }
+
+        #tab-bosslist .cat-besprel { background: #e6f0fa; border-left: 4px solid #3b82f6; }
+        #tab-bosslist .cat-besprel .table-header { background: #e6f0fa; color: #1e3a8a; }
+        #tab-bosslist .cat-nadzir { background: #fef3e6; border-left: 4px solid #f59e0b; }
+        #tab-bosslist .cat-nadzir .table-header { background: #fef3e6; color: #92400e; }
+        #tab-bosslist .cat-recidiv { background: #f3e8ff; border-left: 4px solid #8b5cf6; }
+        #tab-bosslist .cat-recidiv .table-header { background: #f3e8ff; color: #5b21b6; }
+
+        #tab-bosslist .btn-export2 {
+            background: #28a745;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        #tab-bosslist .btn-export2:hover { background: #218838; }
+
+        /* ===== Тёмная тема для списка ===== */
+        body.dark #tab-bosslist .table-wrapper {
+            background: #0f172a;
+            border-color: #334155;
+        }
+        body.dark #tab-bosslist .table-header {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        body.dark #tab-bosslist .table-header .count {
+            color: #94a3b8;
+        }
+        body.dark #tab-bosslist table {
+            background: #0f172a;
+        }
+        body.dark #tab-bosslist table th {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-color: #334155;
+        }
+        body.dark #tab-bosslist table td {
+            border-color: #334155;
+        }
+        body.dark #tab-bosslist .col-boss {
+            color: #e2e8f0;
+        }
+        body.dark #tab-bosslist .hp-cell.empty {
+            color: #64748b;
+        }
+        body.dark #tab-bosslist .hp-low   { background: #1e3a2f; }
+        body.dark #tab-bosslist .hp-mid   { background: #3d3a1f; }
+        body.dark #tab-bosslist .hp-high  { background: #4a2e1a; }
+        body.dark #tab-bosslist .hp-vhigh { background: #4a1f1f; }
+        body.dark #tab-bosslist .cat-besprel { background: #1e293b; border-left-color: #3b82f6; }
+        body.dark #tab-bosslist .cat-besprel .table-header { background: #1e293b; color: #93bbfc; }
+        body.dark #tab-bosslist .cat-nadzir { background: #2d2416; border-left-color: #f59e0b; }
+        body.dark #tab-bosslist .cat-nadzir .table-header { background: #2d2416; color: #fcd34d; }
+        body.dark #tab-bosslist .cat-recidiv { background: #1e1b2e; border-left-color: #8b5cf6; }
+        body.dark #tab-bosslist .cat-recidiv .table-header { background: #1e1b2e; color: #c4b5fd; }
+
+        /* ===== АДАПТАЦИЯ ===== */
+        @media (max-width: 900px) {
+            #tab-bosslist .tables-grid {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            #tab-bosslist .table-wrapper {
+                flex: 1 1 280px;
+                min-width: 280px;
+            }
+        }
+        @media (max-width: 768px) {
+            body { padding: 12px 8px; }
+            .app-header { padding: 12px 16px; flex-direction: column; align-items: stretch; gap: 12px; }
             .logo-area { justify-content:center; }
             .header-actions { justify-content:center; }
-            .add-form-grid { grid-template-columns:1fr; gap:14px; }
-            .form-info-grid { grid-template-columns:1fr 1fr; }
-            .add-btn-wrap { justify-content:center; }
-            .btn-add { width:100%; justify-content:center; }
-            .stats-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
-            .stat-card .stat-value { font-size:20px; }
-            .actions-bar { flex-direction:column; align-items:stretch; }
-            .actions-bar .btn, .actions-bar .export-select { justify-content:center; width:100%; }
-            table.boss-table { font-size:11px; min-width:900px; }
-            table.boss-table th, table.boss-table td { padding:6px 4px; }
-            table.boss-table td input, table.boss-table td select { font-size:11px; padding:4px 4px; min-height:28px; }
-            .guide { padding:16px 14px; }
+            #tab-calculator .add-form-grid { grid-template-columns:1fr; gap:14px; }
+            #tab-calculator .form-info-grid { grid-template-columns:1fr 1fr; }
+            #tab-calculator .add-btn-wrap { justify-content:center; }
+            #tab-calculator .btn-add { width:100%; justify-content:center; }
+            #tab-calculator .stats-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+            #tab-calculator .stat-card .stat-value { font-size:20px; }
+            #tab-calculator .actions-bar { flex-direction:column; align-items:stretch; }
+            #tab-calculator .actions-bar .btn, #tab-calculator .actions-bar .export-select { justify-content:center; width:100%; }
+            #tab-calculator table.boss-table { font-size:11px; min-width:900px; }
+            #tab-calculator table.boss-table th, #tab-calculator table.boss-table td { padding:6px 4px; }
+            #tab-calculator .guide { padding:16px 14px; }
+            #tab-bosslist .tables-grid { flex-direction: column; gap: 16px; align-items: stretch; }
+            #tab-bosslist .table-wrapper { width: 100%; min-width: 0; }
+            #tab-bosslist table { font-size: 12px; min-width: 300px; }
+            #tab-bosslist .col-boss { min-width: 70px; }
+            #tab-bosslist .hp-cell { font-size: 12px; padding-right: 6px; min-width: 60px; }
+            #tab-bosslist .table-header { font-size: 14px; padding: 8px 12px; }
         }
-        @media (max-width:480px) {
+        @media (max-width: 480px) {
             .logo-text .title { font-size:18px; }
             .logo-text .sub { font-size:11px; }
             .logo-icon { width:36px; height:36px; font-size:16px; }
-            .stats-grid { grid-template-columns:1fr 1fr; gap:6px; }
-            .stat-card { padding:12px 10px; }
-            .stat-card .stat-value { font-size:18px; }
-            .stat-card .stat-label { font-size:10px; }
-            .form-info-grid { grid-template-columns:1fr 1fr; }
-            .form-info-item .info-value { font-size:15px; }
-            .add-form-wrap { padding:16px; }
-            .header-actions .btn-link { font-size:12px; padding:4px 10px; }
-            table.boss-table { font-size:10px; min-width:750px; }
-            .guide p, .guide ul { font-size:13px; }
+            #tab-calculator .stats-grid { grid-template-columns:1fr 1fr; gap:6px; }
+            #tab-calculator .stat-card { padding:12px 10px; }
+            #tab-calculator .stat-card .stat-value { font-size:18px; }
+            #tab-calculator .stat-card .stat-label { font-size:10px; }
+            #tab-calculator .form-info-grid { grid-template-columns:1fr 1fr; }
+            #tab-calculator .form-info-item .info-value { font-size:15px; }
+            #tab-calculator .add-form-wrap { padding:16px; }
+            #tab-calculator table.boss-table { font-size:10px; min-width:750px; }
+            #tab-calculator .guide p, #tab-calculator .guide ul { font-size:13px; }
+            #tab-bosslist table { font-size: 11px; min-width: 260px; }
         }
-        #fileInput { display:none; }
     </style>
 </head>
 <body>
-
 <div class="container">
 
-    <!-- HEADER -->
+    <!-- ===== ШАПКА ===== -->
     <header class="app-header">
         <div class="logo-area">
-            <div class="logo-icon">👊</div>
+            <div class="logo-icon">
+                <img src="https://i.ibb.co/rKqF7DgJ/photo-2026-07-01-08-19-36.jpg" alt="Логотип">
+            </div>
             <div class="logo-text">
                 <span class="title">Dopki.ru</span>
                 <span class="sub">Калькулятор урона по боссам</span>
@@ -428,1003 +605,1201 @@
         <div class="header-actions">
             <a href="https://t.me/dopkiru" target="_blank" class="btn-link primary">📢 Канал</a>
             <a href="https://t.me/dopkicom" target="_blank" class="btn-link primary">💬 Чат</a>
+            <button class="btn-link" id="copyIdBtn" style="font-size:13px;">📋 ID</button>
             <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">🌙</button>
         </div>
     </header>
 
-    <!-- STATS -->
-    <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><div class="stat-label">Всего боссов</div><div class="stat-value" id="statBosses">0</div></div>
-        <div class="stat-card accent"><div class="stat-label">Общий урон</div><div class="stat-value" id="statTotalDmg">0</div></div>
-        <div class="stat-card"><div class="stat-label">Доп. наград</div><div class="stat-value" id="statExtraTatu">0</div></div>
-        <div class="stat-card accent"><div class="stat-label">Всего тату</div><div class="stat-value" id="statAllTatu">0</div></div>
+    <!-- ===== ВКЛАДКИ ===== -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="calculator">📊 Калькулятор</button>
+        <button class="tab-btn" data-tab="bosslist">📋 Список боссов</button>
     </div>
 
-    <!-- ADD FORM -->
-    <section class="add-section">
-        <div class="add-form-wrap">
-            <form class="add-form-grid" id="addForm" autocomplete="off">
-                <div class="field-group">
-                    <label for="bossSelect">Босс</label>
-                    <select id="bossSelect"></select>
-                </div>
-                <div class="field-group">
-                    <label for="modeSelect">Режим</label>
-                    <select id="modeSelect"></select>
-                </div>
-                <div class="field-group">
-                    <label for="tatuSelect">Доп. наград за нападение</label>
-                    <select id="tatuSelect"></select>
-                    <div id="noDopMessage" style="display:none; font-size:13px; color:#b33a3a; font-weight:600; margin-top:4px;">⚠️ Нет доп. наград</div>
-                </div>
-                <div class="field-group">
-                    <label for="attackLimitInput">Лимит нападений</label>
-                    <input type="number" id="attackLimitInput" value="9" min="1" step="1">
-                </div>
-                <div class="form-info-grid" id="formInfoGrid">
-                    <div class="form-info-item"><div class="info-label">HP</div><div class="info-value" id="displayBaseHp">0</div></div>
-                    <div class="form-info-item"><div class="info-label">Урон на допку</div><div class="info-value" id="displayDmgPerTatu">0</div></div>
-                    <div class="form-info-item"><div class="info-label">Максимум допок</div><div class="info-value" id="displayMaxTatu">0</div></div>
-                    <div class="form-info-item danger" id="noDopCard" style="display:none;">
-                        <div class="info-label">Статус</div>
-                        <div class="info-value"><span class="no-dop-badge">❌ Доп. награды отсутствуют</span></div>
-                    </div>
-                </div>
-                <div class="add-btn-wrap"><button type="button" class="btn-add" id="addBtn">➕ Добавить босса</button></div>
-            </form>
+    <!-- ===== ТАБ 1: КАЛЬКУЛЯТОР ===== -->
+    <div class="tab-content active" id="tab-calculator">
+        <!-- STATS -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="stat-label">Всего боссов</div><div class="stat-value" id="statBosses">0</div></div>
+            <div class="stat-card accent"><div class="stat-label">Суммарное HP</div><div class="stat-value" id="statTotalHp">0</div></div>
+            <div class="stat-card accent"><div class="stat-label">Общий урон</div><div class="stat-value" id="statTotalDmg">0</div></div>
+            <div class="stat-card"><div class="stat-label">Доп. наград</div><div class="stat-value" id="statExtraTatu">0</div></div>
+            <div class="stat-card accent"><div class="stat-label">Всего тату</div><div class="stat-value" id="statAllTatu">0</div></div>
         </div>
-    </section>
 
-    <!-- ACTIONS -->
-    <div class="actions-bar">
-        <select class="export-select" id="exportFormat"><option value="tsv">TSV (для Excel)</option><option value="xls" selected>Excel (.xls)</option></select>
-        <button class="btn btn-primary" id="exportBtn">📄 Экспорт</button>
-        <button class="btn btn-primary" id="importBtn">📂 Импорт</button>
-        <button class="btn btn-danger" id="clearBtn">🗑 Очистить всё</button>
-        <input type="file" id="fileInput" accept=".tsv,.csv,.txt,.xls">
+        <!-- ADD FORM -->
+        <section class="add-section">
+            <div class="add-form-wrap">
+                <form class="add-form-grid" id="addForm" autocomplete="off">
+                    <div class="field-group">
+                        <label for="bossSelect">Босс</label>
+                        <select id="bossSelect"></select>
+                    </div>
+                    <div class="field-group">
+                        <label for="modeSelect">Режим</label>
+                        <select id="modeSelect"></select>
+                    </div>
+                    <div class="field-group">
+                        <label for="tatuSelect">Доп. наград за нападение</label>
+                        <select id="tatuSelect"></select>
+                        <div id="noDopMessage" style="display:none; font-size:13px; color:#b33a3a; font-weight:600; margin-top:4px;">⚠️ Нет доп. наград</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="attackLimitInput">Лимит нападений</label>
+                        <input type="number" id="attackLimitInput" value="9" min="1" step="1">
+                    </div>
+                    <div class="form-info-grid" id="formInfoGrid">
+                        <div class="form-info-item"><div class="info-label">HP</div><div class="info-value" id="displayBaseHp">0</div></div>
+                        <div class="form-info-item"><div class="info-label">Урон на допку</div><div class="info-value" id="displayDmgPerTatu">0</div></div>
+                        <div class="form-info-item"><div class="info-label">Максимум допок</div><div class="info-value" id="displayMaxTatu">0</div></div>
+                        <div class="form-info-item danger" id="noDopCard" style="display:none;">
+                            <div class="info-label">Статус</div>
+                            <div class="info-value"><span class="no-dop-badge">❌ Доп. награды отсутствуют</span></div>
+                        </div>
+                    </div>
+                    <div class="add-btn-wrap"><button type="button" class="btn-add" id="addBtn">➕ Добавить босса</button></div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ACTIONS -->
+        <div class="actions-bar">
+            <select class="export-select" id="exportFormat"><option value="tsv">TSV (для Excel)</option><option value="xls" selected>Excel (.xls)</option></select>
+            <button class="btn btn-primary" id="exportBtn">📄 Экспорт</button>
+            <button class="btn btn-primary" id="importBtn">📂 Импорт</button>
+            <button class="btn btn-danger" id="clearBtn">🗑 Очистить всё</button>
+            <input type="file" id="fileInput" accept=".tsv,.csv,.txt,.xls">
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-wrap">
+            <table class="boss-table" id="bossTable">
+                <thead>
+                    <tr>
+                        <th>Босс</th>
+                        <th>Режим</th>
+                        <th>HP</th>
+                        <th>Итоговое HP</th>
+                        <th>Урон на 1 доп. тату</th>
+                        <th>Доп. тату за нападение</th>
+                        <th>Лимит нападений</th>
+                        <th>Урон за нападение</th>
+                        <th>Общий урон</th>
+                        <th>Доп. тату</th>
+                        <th>Тату за победы</th>
+                        <th>Всего тату</th>
+                        <th>Удалить</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+                <tfoot id="tableFoot" style="display:none;">
+                    <tr class="total-row">
+                        <td colspan="2" style="text-align:right; padding-right:16px;"><span class="total-label">ИТОГО:</span></td>
+                        <td></td>
+                        <td id="totalHp">0</td>
+                        <td colspan="4"></td>
+                        <td id="totalDmg">0</td>
+                        <td id="totalExtraTatu">0</td>
+                        <td id="totalWinTatu">0</td>
+                        <td id="totalAllTatu">0</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- EMPTY -->
+        <div id="emptyMessage" class="empty-message">Нет добавленных боссов. Добавьте первого!</div>
+
+        <!-- GUIDE -->
+        <div class="guide">
+            <h3>📖 Как пользоваться калькулятором</h3>
+            <p><strong>1. Добавление босса:</strong> Выберите босса из списка, затем режим. Количество допок выбирается автоматически из доступных вариантов. Если режим не даёт допок, кнопка добавления будет заблокирована.</p>
+            <p><strong>2. Редактирование:</strong> Все поля в таблице можно менять прямо в ячейках — расчёт обновится мгновенно.</p>
+            <p><strong>3. Автосохранение:</strong> Все данные сохраняются в браузере (localStorage) и восстанавливаются при повторном открытии страницы.</p>
+            <p><strong>4. Экспорт:</strong> Выберите формат (TSV или Excel) и нажмите «Экспорт» — файл скачается автоматически.</p>
+            <p><strong>5. Импорт:</strong> Нажмите «Импорт» и выберите ранее сохранённый файл (TSV или Excel .xls) — таблица восстановится.</p>
+            <p><strong>6. Очистка:</strong> Кнопка «Очистить всё» удаляет всех боссов и очищает локальное хранилище.</p>
+            <p style="margin-top:8px; color:var(--text-muted); font-size:13px;">ℹ️ Все числа отображаются с разделителями тысяч для удобства чтения.</p>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast">✅ Готово</div>
     </div>
 
-    <!-- TABLE -->
-    <div class="table-wrap">
-        <table class="boss-table" id="bossTable">
-            <thead>
-                <tr>
-                    <th>Босс</th>
-                    <th>Базовое HP</th>
-                    <th>Режим</th>
-                    <th>Итоговое HP</th>
-                    <th>Урон на 1 доп. тату</th>
-                    <th>Доп. тату за нападение</th>
-                    <th>Лимит нападений</th>
-                    <th>Урон за нападение</th>
-                    <th>Общий урон</th>
-                    <th>Доп. тату</th>
-                    <th>Тату за победы</th>
-                    <th>Всего тату</th>
-                    <th>Удалить</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-            <tfoot id="tableFoot" style="display:none;">
-                <tr class="total-row">
-                    <td colspan="7" style="text-align:right; padding-right:16px;"><span class="total-label">ИТОГО:</span></td>
-                    <td></td>
-                    <td id="totalDmg">0</td>
-                    <td id="totalExtraTatu">0</td>
-                    <td id="totalWinTatu">0</td>
-                    <td id="totalAllTatu">0</td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-
-    <!-- EMPTY -->
-    <div id="emptyMessage" class="empty-message">Нет добавленных боссов. Добавьте первого!</div>
-
-    <!-- GUIDE -->
-    <div class="guide">
-        <h3>📖 Как пользоваться калькулятором</h3>
-        <p><strong>1. Добавление босса:</strong> Выберите босса из списка, затем режим. Количество допок выбирается автоматически из доступных вариантов. Если режим не даёт допок, кнопка добавления будет заблокирована.</p>
-        <p><strong>2. Редактирование:</strong> Все поля в таблице можно менять прямо в ячейках — расчёт обновится мгновенно.</p>
-        <p><strong>3. Автосохранение:</strong> Все данные сохраняются в браузере (localStorage) и восстанавливаются при повторном открытии страницы.</p>
-        <p><strong>4. Экспорт:</strong> Выберите формат (TSV или Excel) и нажмите «Экспорт» — файл скачается автоматически.</p>
-        <p><strong>5. Импорт:</strong> Нажмите «Импорт» и выберите ранее сохранённый файл (TSV или Excel .xls) — таблица восстановится.</p>
-        <p><strong>6. Очистка:</strong> Кнопка «Очистить всё» удаляет всех боссов и очищает локальное хранилище.</p>
-        <p style="margin-top:8px; color:var(--text-muted); font-size:13px;">ℹ️ Все числа отображаются с разделителями тысяч для удобства чтения.</p>
+    <!-- ===== ТАБ 2: СПИСОК БОССОВ ===== -->
+    <div class="tab-content" id="tab-bosslist">
+        <div style="margin-bottom:16px; display:flex; justify-content:flex-end;">
+            <button class="btn-export2" id="exportBtn2">⬇ Экспорт в Excel</button>
+        </div>
+        <div class="tables-grid" id="tablesContainer2">
+            <p style="padding: 20px; text-align: center; width: 100%;">Загрузка...</p>
+        </div>
     </div>
 
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast">✅ Готово</div>
-
+<!-- ===== СКРИПТЫ ===== -->
 <script>
-(function() {
-    'use strict';
+    // ================================================================
+    // 1. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+    // ================================================================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const target = this.dataset.tab;
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById('tab-' + target).classList.add('active');
+        });
+    });
 
     // ================================================================
-    // 1. БАЗА ДАННЫХ БОССОВ
-    // ================================================================
-    const MODES = {
-        '1': { label: 'Пацанский', multiplier: 1 },
-        '3': { label: 'Блатной', multiplier: 3 },
-        '6': { label: 'Авторитетный', multiplier: 6 },
-        '12': { label: 'Воровской', multiplier: 12 }
-    };
-
-    const BOSSES = {
-        'Бугор': {
-            hp: 1000000000,
-            modes: {
-                '1': { dmg: 10000000, max: 2 },
-                '3': { dmg: 12000000, max: 3 },
-                '6': { dmg: null, max: 0 },
-                '12': { dmg: 45000000, max: 2 }
-            }
-        },
-        'Немой': {
-            hp: 100000000,
-            modes: {
-                '1': { dmg: 6000000, max: 2 },
-                '3': { dmg: 7200000, max: 2 },
-                '6': { dmg: null, max: 0 },
-                '12': { dmg: 15000000, max: 2 }
-            }
-        },
-        'Бидон': {
-            hp: 300000000,
-            modes: {
-                '1': { dmg: null, max: 0 },
-                '3': { dmg: 7500000, max: 2 },
-                '6': { dmg: null, max: 0 },
-                '12': { dmg: 20000000, max: 2 }
-            }
-        },
-        'Змей': {
-            hp: 13000000000,
-            modes: {
-                '1': { dmg: 27500000, max: 2 },
-                '3': { dmg: null, max: 0 },
-                '6': {
-                    dmg: 28000000,
-                    max: 4,
-                    thresholds: [0, 28000000, 55000000, 83000000, 110000000]
-                },
-                '12': { dmg: null, max: 0 }
-            }
-        },
-        'Чугун': {
-            hp: 400000000,
-            modes: {
-                '1': { dmg: 12000000, max: 2 },
-                '3': { dmg: 10000000, max: 3 },
-                '6': { dmg: null, max: 0 },
-                '12': { dmg: 35000000, max: 2 }
-            }
-        },
-        'Кнут': {
-            hp: 500000000,
-            modes: {
-                '1': { dmg: 15000000, max: 2 },
-                '3': { dmg: null, max: 0 },
-                '6': { dmg: 20000000, max: 3 },
-                '12': { dmg: 40000000, max: 2 }
-            }
-        },
-        'Крест': {
-            hp: 5000000000,
-            modes: {
-                '1': { dmg: 23000000, max: 2 },
-                '3': { dmg: null, max: 0 },
-                '6': { dmg: 25000000, max: 3 },
-                '12': { dmg: null, max: 0 }
-            }
-        },
-        'Гвоздь': {
-            hp: 25000000000,
-            modes: {
-                '1': { dmg: null, max: 0 },
-                '3': { dmg: 50000000, max: 3 },
-                '6': { dmg: 70000000, max: 4 },
-                '12': { dmg: null, max: 0 }   // <-- добавлен Воровской без допок
-            }
-        }
-    };
-
-    // ================================================================
-    // 2. DOM
-    // ================================================================
-    const form = document.getElementById('addForm');
-    const bossSelect = document.getElementById('bossSelect');
-    const modeSelect = document.getElementById('modeSelect');
-    const tatuSelect = document.getElementById('tatuSelect');
-    const attackLimitInput = document.getElementById('attackLimitInput');
-    const displayBaseHp = document.getElementById('displayBaseHp');
-    const displayDmgPerTatu = document.getElementById('displayDmgPerTatu');
-    const displayMaxTatu = document.getElementById('displayMaxTatu');
-    const noDopMessage = document.getElementById('noDopMessage');
-    const noDopCard = document.getElementById('noDopCard');
-    const addBtn = document.getElementById('addBtn');
-    const tableBody = document.getElementById('tableBody');
-    const tableFoot = document.getElementById('tableFoot');
-    const emptyMessage = document.getElementById('emptyMessage');
-    const totalDmg = document.getElementById('totalDmg');
-    const totalExtraTatu = document.getElementById('totalExtraTatu');
-    const totalWinTatu = document.getElementById('totalWinTatu');
-    const totalAllTatu = document.getElementById('totalAllTatu');
-    const exportBtn = document.getElementById('exportBtn');
-    const importBtn = document.getElementById('importBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const fileInput = document.getElementById('fileInput');
-    const toast = document.getElementById('toast');
-    const exportFormat = document.getElementById('exportFormat');
-    const statBosses = document.getElementById('statBosses');
-    const statTotalDmg = document.getElementById('statTotalDmg');
-    const statExtraTatu = document.getElementById('statExtraTatu');
-    const statAllTatu = document.getElementById('statAllTatu');
-    const themeToggle = document.getElementById('themeToggle');
-
-    // ================================================================
-    // 3. СОСТОЯНИЕ
-    // ================================================================
-    let bosses = [];
-    let nextId = 1;
-
-    // ================================================================
-    // 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // ================================================================
-    function fmt(n) {
-        if (n === undefined || n === null || isNaN(n)) return '0';
-        return Math.round(n).toLocaleString('ru-RU');
-    }
-
-    function parseNumber(str) {
-        if (typeof str === 'number') return str;
-        if (typeof str === 'string') {
-            const cleaned = str.replace(/\s/g, '').replace(/,/g, '');
-            const num = parseFloat(cleaned);
-            return isNaN(num) ? 0 : num;
-        }
-        return 0;
-    }
-
-    function getModeMultiplier(modeValue) {
-        return parseFloat(modeValue) || 1;
-    }
-
-    function getModeLabel(modeValue) {
-        return MODES[modeValue] ? MODES[modeValue].label : modeValue;
-    }
-
-    function isZmei6(boss) {
-        return boss.name === 'Змей' && boss.mode === '6';
-    }
-
-    function getZmeiThreshold(boss) {
-        if (!isZmei6(boss)) return 0;
-        const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-        const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-        return thresholds[idx] || 0;
-    }
-
-    // ================================================================
-    // 5. ТЕМА
+    // 2. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ (общий)
     // ================================================================
     function getTheme() { return document.documentElement.getAttribute('data-theme') || 'light'; }
     function setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
-        themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        document.querySelector('.theme-toggle').textContent = theme === 'dark' ? '☀️' : '🌙';
         localStorage.setItem('dopkiTheme', theme);
+        if (theme === 'dark') document.body.classList.add('dark');
+        else document.body.classList.remove('dark');
     }
     function toggleTheme() { setTheme(getTheme() === 'dark' ? 'light' : 'dark'); }
-    function loadTheme() {
+    document.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
+
+    (function loadTheme() {
         const saved = localStorage.getItem('dopkiTheme');
         if (saved) setTheme(saved);
         else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
         else setTheme('light');
-    }
-    themeToggle.addEventListener('click', toggleTheme);
-
-    // ================================================================
-    // 6. ОБНОВЛЕНИЕ ФОРМЫ
-    // ================================================================
-    function updateForm() {
-        const bossName = bossSelect.value;
-        const bossData = BOSSES[bossName];
-        if (!bossData) {
-            displayBaseHp.textContent = '0';
-            displayDmgPerTatu.textContent = '0';
-            displayMaxTatu.textContent = '0';
-            tatuSelect.innerHTML = '';
-            noDopMessage.style.display = 'none';
-            noDopCard.style.display = 'none';
-            addBtn.disabled = true;
-            modeSelect.innerHTML = '<option value="">— Нет босса —</option>';
-            return;
-        }
-
-        // 1. Обновляем список доступных режимов
-        const availableModes = Object.keys(bossData.modes).sort((a,b) => parseInt(a)-parseInt(b));
-        modeSelect.innerHTML = '';
-        if (availableModes.length === 0) {
-            const opt = document.createElement('option');
-            opt.value = '';
-            opt.textContent = '— Нет режимов —';
-            modeSelect.appendChild(opt);
-            displayBaseHp.textContent = fmt(bossData.hp);
-            displayDmgPerTatu.textContent = '—';
-            displayMaxTatu.textContent = '0';
-            tatuSelect.innerHTML = '';
-            noDopMessage.style.display = 'block';
-            noDopCard.style.display = 'block';
-            addBtn.disabled = true;
-            return;
-        }
-        availableModes.forEach(m => {
-            const opt = document.createElement('option');
-            opt.value = m;
-            opt.textContent = MODES[m].label + ' (×' + MODES[m].multiplier + ')';
-            modeSelect.appendChild(opt);
-        });
-        // Выбираем первый доступный (или сохраняем текущий, если он ещё доступен)
-        const currentMode = modeSelect.value;
-        if (availableModes.includes(currentMode)) {
-            modeSelect.value = currentMode;
-        } else {
-            modeSelect.value = availableModes[0];
-        }
-
-        // 2. Обновляем информацию о выбранном режиме
-        updateModeInfo();
-    }
-
-    function updateModeInfo() {
-        const bossName = bossSelect.value;
-        const mode = modeSelect.value;
-        const bossData = BOSSES[bossName];
-        if (!bossData || !mode) {
-            displayBaseHp.textContent = '0';
-            displayDmgPerTatu.textContent = '0';
-            displayMaxTatu.textContent = '0';
-            tatuSelect.innerHTML = '';
-            noDopMessage.style.display = 'none';
-            noDopCard.style.display = 'none';
-            addBtn.disabled = true;
-            return;
-        }
-
-        const modeData = bossData.modes[mode];
-        if (!modeData) {
-            displayBaseHp.textContent = fmt(bossData.hp);
-            displayDmgPerTatu.textContent = '—';
-            displayMaxTatu.textContent = '0';
-            tatuSelect.innerHTML = '';
-            noDopMessage.style.display = 'block';
-            noDopCard.style.display = 'block';
-            addBtn.disabled = true;
-            return;
-        }
-
-        displayBaseHp.textContent = fmt(bossData.hp);
-        const dmg = modeData.dmg;
-        const max = modeData.max;
-        const thresholds = modeData.thresholds;
-
-        if (thresholds && thresholds.length > 1) {
-            displayDmgPerTatu.textContent = fmt(thresholds[1]) + ' (пороги)';
-        } else {
-            displayDmgPerTatu.textContent = dmg !== null ? fmt(dmg) : 'нет';
-        }
-
-        displayMaxTatu.textContent = max || 0;
-
-        tatuSelect.innerHTML = '';
-        if (max > 0 && dmg !== null) {
-            for (let i = 1; i <= max; i++) {
-                const opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = i;
-                tatuSelect.appendChild(opt);
-            }
-            noDopMessage.style.display = 'none';
-            noDopCard.style.display = 'none';
-            addBtn.disabled = false;
-        } else {
-            tatuSelect.innerHTML = '';
-            noDopMessage.style.display = 'block';
-            noDopCard.style.display = 'block';
-            addBtn.disabled = true;
-        }
-    }
-
-    // ================================================================
-    // 7. ЗАПОЛНЕНИЕ СПИСКА БОССОВ (сортировка по HP)
-    // ================================================================
-    function populateBossSelect() {
-        bossSelect.innerHTML = '';
-        const names = Object.keys(BOSSES).sort((a, b) => BOSSES[a].hp - BOSSES[b].hp);
-        names.forEach(name => {
-            const opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name + ' (HP ' + fmt(BOSSES[name].hp) + ')';
-            bossSelect.appendChild(opt);
-        });
-        if (bossSelect.options.length > 0) {
-            bossSelect.selectedIndex = 0;
-        }
-        updateForm();
-    }
-
-    bossSelect.addEventListener('change', updateForm);
-    modeSelect.addEventListener('change', updateModeInfo);
-
-    // ================================================================
-    // 8. ДОБАВЛЕНИЕ БОССА
-    // ================================================================
-    function addFromForm() {
-        const bossName = bossSelect.value;
-        const mode = modeSelect.value;
-        const attackLimit = parseInt(attackLimitInput.value) || 9;
-        const tatuPerAttack = parseInt(tatuSelect.value) || 0;
-
-        const bossData = BOSSES[bossName];
-        if (!bossData) return;
-        const modeData = bossData.modes[mode];
-        if (!modeData || modeData.max === 0 || modeData.dmg === null) {
-            showToast('⚠️ Для выбранного режима нет дополнительных наград');
-            return;
-        }
-
-        const baseHp = bossData.hp;
-        const dmgPerTatu = modeData.dmg;
-
-        addBoss(bossName, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit);
-    }
-
-    addBtn.addEventListener('click', addFromForm);
-    form.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addFromForm();
-        }
-    });
-
-    // ================================================================
-    // 9. ОСНОВНЫЕ ФУНКЦИИ (без изменений)
-    // ================================================================
-    function addBoss(name, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit) {
-        const effectiveHp = baseHp * getModeMultiplier(mode);
-        const boss = {
-            id: nextId++,
-            name: name.trim() || 'Босс',
-            baseHp: baseHp,
-            mode: mode,
-            effectiveHp: effectiveHp,
-            dmgPerTatu: dmgPerTatu,
-            tatuPerAttack: tatuPerAttack,
-            attackLimit: attackLimit
-        };
-        bosses.push(boss);
-        saveToLocalStorage();
-        renderTable();
-        updateStats();
-        showToast(`✅ Босс "${boss.name}" добавлен`);
-    }
-
-    function deleteBoss(id) {
-        bosses = bosses.filter(b => b.id !== id);
-        saveToLocalStorage();
-        renderTable();
-        updateStats();
-        showToast('🗑 Босс удалён');
-    }
-
-    function clearAll() {
-        if (bosses.length === 0) {
-            showToast('⚠️ Нет данных для очистки');
-            return;
-        }
-        if (confirm('Вы уверены, что хотите удалить всех боссов? Данные будут потеряны.')) {
-            bosses = [];
-            nextId = 1;
-            saveToLocalStorage();
-            renderTable();
-            updateStats();
-            showToast('🗑 Все данные очищены');
-        }
-    }
-    clearBtn.addEventListener('click', clearAll);
-
-    // ================================================================
-    // 10. СТАТИСТИКА
-    // ================================================================
-    function updateStats() {
-        statBosses.textContent = bosses.length;
-        let sumDmg = 0, sumExtra = 0, sumAll = 0;
-        bosses.forEach(boss => {
-            let dmgPerAttack;
-            if (isZmei6(boss)) {
-                dmgPerAttack = getZmeiThreshold(boss);
-            } else {
-                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-            }
-            const totalDmg = dmgPerAttack * boss.attackLimit;
-            const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-            const winTatu = boss.attackLimit;
-            const allTatu = extraTatu + winTatu;
-            sumDmg += totalDmg;
-            sumExtra += extraTatu;
-            sumAll += allTatu;
-        });
-        statTotalDmg.textContent = fmt(sumDmg);
-        statExtraTatu.textContent = fmt(sumExtra);
-        statAllTatu.textContent = fmt(sumAll);
-        document.getElementById('totalDmg').textContent = fmt(sumDmg);
-        document.getElementById('totalExtraTatu').textContent = fmt(sumExtra);
-        document.getElementById('totalWinTatu').textContent = fmt(sumDmg > 0 ? bosses.reduce((s, b) => s + b.attackLimit, 0) : 0);
-        document.getElementById('totalAllTatu').textContent = fmt(sumAll);
-    }
-
-    // ================================================================
-    // 11. РЕНДЕР ТАБЛИЦЫ
-    // ================================================================
-    function renderTable() {
-        if (bosses.length === 0) {
-            tableBody.innerHTML = '';
-            tableFoot.style.display = 'none';
-            emptyMessage.style.display = 'block';
-            return;
-        }
-        emptyMessage.style.display = 'none';
-
-        let html = '';
-        bosses.forEach((boss, index) => {
-            let dmgPerAttack;
-            let displayDmg;
-            const isZmei = isZmei6(boss);
-
-            if (isZmei) {
-                dmgPerAttack = getZmeiThreshold(boss);
-                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-                displayDmg = thresholds[idx] || 0;
-            } else {
-                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                displayDmg = boss.dmgPerTatu;
-            }
-
-            const totalDmg = dmgPerAttack * boss.attackLimit;
-            const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-            const winTatu = boss.attackLimit;
-            const allTatu = extraTatu + winTatu;
-
-            html += `<tr class="boss-row" data-index="${index}">`;
-            html += `<td><input type="text" class="edit-name" value="${boss.name}" data-id="${boss.id}"></td>`;
-            html += `<td><input type="text" class="edit-basehp" value="${fmt(boss.baseHp)}" data-id="${boss.id}"></td>`;
-            html += `<td>
-                        <select class="edit-mode" data-id="${boss.id}">
-                            ${Object.keys(MODES).map(m => 
-                                `<option value="${m}" ${boss.mode == m ? 'selected' : ''}>${MODES[m].label}</option>`
-                            ).join('')}
-                        </select>
-                    </td>`;
-            html += `<td class="eff-hp" style="font-weight:600;">${fmt(boss.effectiveHp)}</td>`;
-
-            const readonlyAttr = isZmei ? 'readonly' : '';
-            const titleAttr = isZmei ? `title="Пороги: ${BOSSES['Змей'].modes['6'].thresholds.slice(1).map(fmt).join(' / ')}"` : '';
-            html += `<td><input type="text" class="edit-dmg" value="${fmt(displayDmg)}" data-id="${boss.id}" ${readonlyAttr} ${titleAttr}></td>`;
-
-            html += `<td><input type="number" class="edit-tatu" value="${boss.tatuPerAttack}" data-id="${boss.id}" min="0" step="1"></td>`;
-            html += `<td><input type="number" class="edit-limit" value="${boss.attackLimit}" data-id="${boss.id}" min="1" step="1"></td>`;
-            html += `<td style="font-weight:600;">${fmt(dmgPerAttack)}</td>`;
-            html += `<td style="font-weight:600;">${fmt(totalDmg)}</td>`;
-            html += `<td style="font-weight:600;">${fmt(extraTatu)}</td>`;
-            html += `<td style="font-weight:600;">${fmt(winTatu)}</td>`;
-            html += `<td style="font-weight:600;">${fmt(allTatu)}</td>`;
-            html += `<td><button class="del-btn" data-id="${boss.id}">✕</button></td>`;
-            html += `</tr>`;
-        });
-
-        tableBody.innerHTML = html;
-        tableFoot.style.display = 'table-footer-group';
-        updateStats();
-
-        document.querySelectorAll('.edit-name, .edit-basehp, .edit-mode, .edit-dmg, .edit-tatu, .edit-limit')
-            .forEach(el => {
-                el.addEventListener('input', handleEdit);
-                el.addEventListener('change', handleEdit);
-            });
-
-        document.querySelectorAll('.del-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = parseInt(this.dataset.id);
-                deleteBoss(id);
-            });
-        });
-    }
-
-    // ================================================================
-    // 12. ОБРАБОТЧИК РЕДАКТИРОВАНИЯ
-    // ================================================================
-    function handleEdit(e) {
-        const target = e.target;
-        const id = parseInt(target.dataset.id);
-        const boss = bosses.find(b => b.id === id);
-        if (!boss) return;
-
-        const cls = target.className;
-        let changed = false;
-
-        if (cls.includes('edit-name')) {
-            boss.name = target.value.trim() || 'Босс';
-            changed = true;
-        } else if (cls.includes('edit-basehp')) {
-            const val = parseNumber(target.value);
-            if (!isNaN(val) && val >= 0) {
-                boss.baseHp = val;
-                boss.effectiveHp = boss.baseHp * getModeMultiplier(boss.mode);
-                changed = true;
-            }
-        } else if (cls.includes('edit-mode')) {
-            boss.mode = target.value;
-            boss.effectiveHp = boss.baseHp * getModeMultiplier(boss.mode);
-            changed = true;
-        } else if (cls.includes('edit-dmg')) {
-            if (isZmei6(boss)) {
-                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-                target.value = fmt(thresholds[idx] || 0);
-                return;
-            }
-            const val = parseNumber(target.value);
-            if (!isNaN(val) && val >= 0) {
-                boss.dmgPerTatu = val;
-                changed = true;
-            }
-        } else if (cls.includes('edit-tatu')) {
-            const val = parseInt(target.value);
-            if (!isNaN(val) && val >= 0) {
-                boss.tatuPerAttack = val;
-                changed = true;
-            }
-        } else if (cls.includes('edit-limit')) {
-            const val = parseInt(target.value);
-            if (!isNaN(val) && val >= 1) {
-                boss.attackLimit = val;
-                changed = true;
-            }
-        }
-
-        if (changed) {
-            const row = target.closest('tr');
-            if (row) {
-                const effCell = row.querySelector('.eff-hp');
-                if (effCell) effCell.textContent = fmt(boss.effectiveHp);
-            }
-            saveToLocalStorage();
-            renderTable();
-            updateStats();
-        }
-    }
-
-    // ================================================================
-    // 13. LOCALSTORAGE
-    // ================================================================
-    function saveToLocalStorage() {
-        const data = { bosses, nextId };
-        localStorage.setItem('bossCalculatorData', JSON.stringify(data));
-    }
-
-    function loadFromLocalStorage() {
-        const stored = localStorage.getItem('bossCalculatorData');
-        if (stored) {
-            try {
-                const data = JSON.parse(stored);
-                bosses = data.bosses || [];
-                nextId = data.nextId || 1;
-                return true;
-            } catch (e) {
-                console.warn('Ошибка парсинга localStorage', e);
-                return false;
-            }
-        }
-        return false;
-    }
-
-    // ================================================================
-    // 14. ЭКСПОРТ / ИМПОРТ
-    // ================================================================
-    function exportTSV() {
-        if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
-        let header = ['Босс','Базовое HP','Режим','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
-        let rows = [];
-        bosses.forEach(boss => {
-            let dmgPerAttack, displayDmg;
-            if (isZmei6(boss)) {
-                dmgPerAttack = getZmeiThreshold(boss);
-                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-                displayDmg = thresholds[idx] || 0;
-            } else {
-                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                displayDmg = boss.dmgPerTatu;
-            }
-            const totalDmg = dmgPerAttack * boss.attackLimit;
-            const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-            const winTatu = boss.attackLimit;
-            const allTatu = extraTatu + winTatu;
-            rows.push([boss.name, boss.baseHp, getModeLabel(boss.mode), boss.effectiveHp, displayDmg, boss.tatuPerAttack, boss.attackLimit, dmgPerAttack, totalDmg, extraTatu, winTatu, allTatu]);
-        });
-        let sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
-        bosses.forEach(boss => {
-            let dmgPerAttack;
-            if (isZmei6(boss)) {
-                dmgPerAttack = getZmeiThreshold(boss);
-            } else {
-                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-            }
-            const totalDmg = dmgPerAttack * boss.attackLimit;
-            const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-            const winTatu = boss.attackLimit;
-            const allTatu = extraTatu + winTatu;
-            sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
-        });
-        rows.push(['ИТОГО','','','','','','','',sumDmg,sumExtra,sumWin,sumAll]);
-        let tsv = header.join('\t') + '\n';
-        rows.forEach(row => tsv += row.join('\t') + '\n');
-        return tsv;
-    }
-
-    function exportXLS() {
-        if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
-        let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}</style></head><body>`;
-        const headers = ['Босс','Базовое HP','Режим','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
-        html += '<table><thead><tr>';
-        headers.forEach(h => html += `<th>${h}</th>`);
-        html += '</tr></thead><tbody>';
-        bosses.forEach(boss => {
-            let dmgPerAttack, displayDmg;
-            if (isZmei6(boss)) {
-                dmgPerAttack = getZmeiThreshold(boss);
-                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-                displayDmg = thresholds[idx] || 0;
-            } else {
-                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                displayDmg = boss.dmgPerTatu;
-            }
-            const totalDmg = dmgPerAttack * boss.attackLimit;
-            const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-            const winTatu = boss.attackLimit;
-            const allTatu = extraTatu + winTatu;
-            html += `<tr><td>${boss.name}</td><td>${fmt(boss.baseHp)}</td><td>${getModeLabel(boss.mode)}</td><td>${fmt(boss.effectiveHp)}</td><td>${fmt(displayDmg)}</td><td>${boss.tatuPerAttack}</td><td>${boss.attackLimit}</td><td>${fmt(dmgPerAttack)}</td><td>${fmt(totalDmg)}</td><td>${fmt(extraTatu)}</td><td>${fmt(winTatu)}</td><td>${fmt(allTatu)}</td></tr>`;
-        });
-        let sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
-        bosses.forEach(boss => {
-            let dmgPerAttack;
-            if (isZmei6(boss)) {
-                dmgPerAttack = getZmeiThreshold(boss);
-            } else {
-                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-            }
-            const totalDmg = dmgPerAttack * boss.attackLimit;
-            const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-            const winTatu = boss.attackLimit;
-            const allTatu = extraTatu + winTatu;
-            sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
-        });
-        html += `<tr class="total"><td colspan="7">ИТОГО</td><td></td><td>${fmt(sumDmg)}</td><td>${fmt(sumExtra)}</td><td>${fmt(sumWin)}</td><td>${fmt(sumAll)}</td></tr>`;
-        html += '</tbody></table></body></html>';
-        return html;
-    }
-
-    function exportData() {
-        const format = exportFormat.value;
-        let content, filename, mime;
-        if (format === 'tsv') {
-            content = exportTSV();
-            if (!content) return;
-            filename = 'boss_calculator_data.tsv';
-            mime = 'text/tab-separated-values;charset=utf-8';
-        } else {
-            content = exportXLS();
-            if (!content) return;
-            filename = 'boss_calculator_data.xls';
-            mime = 'application/vnd.ms-excel;charset=utf-8';
-        }
-        const blob = new Blob([content], { type: mime });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast(`📄 Экспорт в ${format.toUpperCase()} выполнен`);
-    }
-    exportBtn.addEventListener('click', exportData);
-
-    function importFromFile(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const text = e.target.result;
-                const isHtml = text.trim().startsWith('<') && text.includes('<table');
-                let newBosses = [];
-                if (isHtml) {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(text, 'text/html');
-                    const rows = doc.querySelectorAll('table tbody tr');
-                    rows.forEach(row => {
-                        const cols = row.querySelectorAll('td');
-                        if (cols.length < 12) return;
-                        if (cols[0].textContent.trim().toUpperCase() === 'ИТОГО') return;
-                        const name = cols[0].textContent.trim() || 'Босс';
-                        const baseHp = parseNumber(cols[1].textContent);
-                        const modeLabel = cols[2].textContent.trim();
-                        let mode = '1';
-                        if (modeLabel.includes('Блатной')) mode = '3';
-                        else if (modeLabel.includes('Авторитетный')) mode = '6';
-                        else if (modeLabel.includes('Воровской')) mode = '12';
-                        const dmgPerTatu = parseNumber(cols[4].textContent);
-                        const tatuPerAttack = parseInt(cols[5].textContent) || 0;
-                        const attackLimit = parseInt(cols[6].textContent) || 9;
-                        if (baseHp > 0 && dmgPerTatu > 0 && attackLimit > 0) {
-                            newBosses.push({ name, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit });
-                        }
-                    });
-                } else {
-                    const lines = text.split('\n').filter(line => line.trim() !== '');
-                    if (lines.length < 2) { showToast('⚠️ Файл пуст или имеет неверный формат'); return; }
-                    for (let i = 1; i < lines.length; i++) {
-                        const cols = lines[i].split('\t');
-                        if (cols.length < 12) continue;
-                        if (cols[0].trim().toUpperCase() === 'ИТОГО') continue;
-                        const name = cols[0].trim() || 'Босс';
-                        const baseHp = parseNumber(cols[1]);
-                        const modeLabel = cols[2].trim();
-                        let mode = '1';
-                        if (modeLabel.includes('Блатной')) mode = '3';
-                        else if (modeLabel.includes('Авторитетный')) mode = '6';
-                        else if (modeLabel.includes('Воровской')) mode = '12';
-                        const dmgPerTatu = parseNumber(cols[4]);
-                        const tatuPerAttack = parseInt(cols[5]) || 0;
-                        const attackLimit = parseInt(cols[6]) || 9;
-                        if (baseHp > 0 && dmgPerTatu > 0 && attackLimit > 0) {
-                            newBosses.push({ name, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit });
-                        }
-                    }
-                }
-                if (newBosses.length === 0) { showToast('⚠️ Не найдено данных для импорта'); return; }
-
-                newBosses = newBosses.map(b => {
-                    if (b.name === 'Змей' && b.mode === '6') {
-                        const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                        b.dmgPerTatu = thresholds[1] || 28000000;
-                    }
-                    return b;
-                });
-
-                bosses = [];
-                nextId = 1;
-                newBosses.forEach(b => {
-                    const effHp = b.baseHp * getModeMultiplier(b.mode);
-                    bosses.push({
-                        id: nextId++,
-                        name: b.name,
-                        baseHp: b.baseHp,
-                        mode: b.mode,
-                        effectiveHp: effHp,
-                        dmgPerTatu: b.dmgPerTatu,
-                        tatuPerAttack: b.tatuPerAttack,
-                        attackLimit: b.attackLimit
-                    });
-                });
-                saveToLocalStorage();
-                renderTable();
-                updateStats();
-                showToast(`📂 Импортировано ${newBosses.length} боссов`);
-            } catch (err) {
-                console.error(err);
-                showToast('⚠️ Ошибка при импорте');
-            }
-        };
-        reader.readAsText(file, 'UTF-8');
-    }
-
-    importBtn.addEventListener('click', function() { fileInput.click(); });
-    fileInput.addEventListener('change', function(e) {
-        if (this.files && this.files.length > 0) {
-            importFromFile(this.files[0]);
-            this.value = '';
-        }
-    });
-
-    // ================================================================
-    // 14. TOAST
-    // ================================================================
-    let toastTimer = null;
-    function showToast(msg) {
-        toast.textContent = msg;
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    }
-
-    // ================================================================
-    // 15. КОПИРОВАНИЕ ID
-    // ================================================================
-    (function addCopyIdBtn() {
-        const headerActions = document.querySelector('.header-actions');
-        const btn = document.createElement('button');
-        btn.className = 'btn-link';
-        btn.textContent = '📋 ID';
-        btn.style.fontSize = '13px';
-        btn.title = 'Копировать ID разработчика';
-        btn.addEventListener('click', function() {
-            const id = '241586110';
-            navigator.clipboard.writeText(id).then(() => {
-                showToast('📋 Скопировано: ' + id);
-            }).catch(() => {
-                const ta = document.createElement('textarea');
-                ta.value = id;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                showToast('📋 Скопировано: ' + id);
-            });
-        });
-        const themeBtn = document.querySelector('.theme-toggle');
-        headerActions.insertBefore(btn, themeBtn);
     })();
 
     // ================================================================
-    // 16. ИНИЦИАЛИЗАЦИЯ
+    // 3. КОПИРОВАНИЕ ID
     // ================================================================
-    function init() {
-        loadTheme();
-        populateBossSelect();
-
-        const hasData = loadFromLocalStorage();
-        if (!hasData || bosses.length === 0) {
-            const examples = [
-                { name: 'Змей', mode: '1', tatuPerAttack: 2, attackLimit: 3 },
-                { name: 'Бугор', mode: '12', tatuPerAttack: 2, attackLimit: 9 },
-                { name: 'Крест', mode: '6', tatuPerAttack: 2, attackLimit: 7 }
-            ];
-            examples.forEach(ex => {
-                const bossData = BOSSES[ex.name];
-                if (!bossData) return;
-                const modeData = bossData.modes[ex.mode];
-                if (!modeData || modeData.max === 0 || modeData.dmg === null) return;
-                const effHp = bossData.hp * getModeMultiplier(ex.mode);
-                bosses.push({
-                    id: nextId++,
-                    name: ex.name,
-                    baseHp: bossData.hp,
-                    mode: ex.mode,
-                    effectiveHp: effHp,
-                    dmgPerTatu: modeData.dmg,
-                    tatuPerAttack: ex.tatuPerAttack,
-                    attackLimit: ex.attackLimit
-                });
-            });
-            saveToLocalStorage();
+    document.getElementById('copyIdBtn').addEventListener('click', function() {
+        const id = '241586110';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(id).then(() => {
+                showToast('📋 Скопировано: ' + id);
+            }).catch(() => fallbackCopy(id));
+        } else {
+            fallbackCopy(id);
         }
+    });
 
-        renderTable();
-        updateStats();
+    function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            showToast('📋 Скопировано: ' + text);
+        } catch (e) {
+            showToast('⚠️ Не удалось скопировать');
+        }
+        document.body.removeChild(ta);
     }
 
-    init();
+    // ================================================================
+    // 4. СКРИПТ КАЛЬКУЛЯТОРА (первый файл)
+    // ================================================================
+    (function calculator() {
+        'use strict';
 
-})();
+        const MODES = {
+            '1': { label: 'Пацанский', multiplier: 1 },
+            '3': { label: 'Блатной', multiplier: 3 },
+            '6': { label: 'Авторитетный', multiplier: 6 },
+            '12': { label: 'Воровской', multiplier: 12 }
+        };
+
+        const BOSSES = {
+            'Бугор': {
+                hp: 1000000000,
+                modes: {
+                    '1': { dmg: 10000000, max: 2 },
+                    '3': { dmg: 12000000, max: 3 },
+                    '6': { dmg: null, max: 0 },
+                    '12': { dmg: 45000000, max: 2 }
+                }
+            },
+            'Немой': {
+                hp: 100000000,
+                modes: {
+                    '1': { dmg: 6000000, max: 2 },
+                    '3': { dmg: 7200000, max: 2 },
+                    '6': { dmg: null, max: 0 },
+                    '12': { dmg: 15000000, max: 2 }
+                }
+            },
+            'Бидон': {
+                hp: 300000000,
+                modes: {
+                    '1': { dmg: null, max: 0 },
+                    '3': { dmg: 7500000, max: 2 },
+                    '6': { dmg: null, max: 0 },
+                    '12': { dmg: 20000000, max: 2 }
+                }
+            },
+            'Змей': {
+                hp: 13000000000,
+                modes: {
+                    '1': { dmg: 27500000, max: 2 },
+                    '3': { dmg: null, max: 0 },
+                    '6': {
+                        dmg: 28000000,
+                        max: 4,
+                        thresholds: [0, 28000000, 55000000, 83000000, 110000000]
+                    },
+                    '12': { dmg: null, max: 0 }
+                }
+            },
+            'Чугун': {
+                hp: 400000000,
+                modes: {
+                    '1': { dmg: 12000000, max: 2 },
+                    '3': { dmg: 10000000, max: 3 },
+                    '6': { dmg: null, max: 0 },
+                    '12': { dmg: 35000000, max: 2 }
+                }
+            },
+            'Кнут': {
+                hp: 500000000,
+                modes: {
+                    '1': { dmg: 15000000, max: 2 },
+                    '3': { dmg: null, max: 0 },
+                    '6': { dmg: 20000000, max: 3 },
+                    '12': { dmg: 40000000, max: 2 }
+                }
+            },
+            'Крест': {
+                hp: 5000000000,
+                modes: {
+                    '1': { dmg: 23000000, max: 2 },
+                    '3': { dmg: null, max: 0 },
+                    '6': { dmg: 25000000, max: 3 },
+                    '12': { dmg: null, max: 0 }
+                }
+            },
+            'Гвоздь': {
+                hp: 25000000000,
+                modes: {
+                    '1': { dmg: null, max: 0 },
+                    '3': { dmg: 50000000, max: 3 },
+                    '6': { dmg: 70000000, max: 4 },
+                    '12': { dmg: null, max: 0 }
+                }
+            }
+        };
+
+        const container = document.getElementById('tab-calculator');
+        const bossSelect = container.querySelector('#bossSelect');
+        const modeSelect = container.querySelector('#modeSelect');
+        const tatuSelect = container.querySelector('#tatuSelect');
+        const attackLimitInput = container.querySelector('#attackLimitInput');
+        const displayBaseHp = container.querySelector('#displayBaseHp');
+        const displayDmgPerTatu = container.querySelector('#displayDmgPerTatu');
+        const displayMaxTatu = container.querySelector('#displayMaxTatu');
+        const noDopMessage = container.querySelector('#noDopMessage');
+        const noDopCard = container.querySelector('#noDopCard');
+        const addBtn = container.querySelector('#addBtn');
+        const tableBody = container.querySelector('#tableBody');
+        const tableFoot = container.querySelector('#tableFoot');
+        const emptyMessage = container.querySelector('#emptyMessage');
+        const totalDmg = container.querySelector('#totalDmg');
+        const totalExtraTatu = container.querySelector('#totalExtraTatu');
+        const totalWinTatu = container.querySelector('#totalWinTatu');
+        const totalAllTatu = container.querySelector('#totalAllTatu');
+        const totalHp = container.querySelector('#totalHp');
+        const exportBtn = container.querySelector('#exportBtn');
+        const importBtn = container.querySelector('#importBtn');
+        const clearBtn = container.querySelector('#clearBtn');
+        const fileInput = container.querySelector('#fileInput');
+        const toast = container.querySelector('#toast');
+        const exportFormat = container.querySelector('#exportFormat');
+        const statBosses = container.querySelector('#statBosses');
+        const statTotalHp = container.querySelector('#statTotalHp');
+        const statTotalDmg = container.querySelector('#statTotalDmg');
+        const statExtraTatu = container.querySelector('#statExtraTatu');
+        const statAllTatu = container.querySelector('#statAllTatu');
+
+        let bosses = [];
+        let nextId = 1;
+
+        function fmt(n) {
+            if (n === undefined || n === null || isNaN(n)) return '0';
+            return Math.round(n).toLocaleString('ru-RU');
+        }
+
+        function parseNumber(str) {
+            if (typeof str === 'number') return str;
+            if (typeof str === 'string') {
+                const cleaned = str.replace(/\s/g, '').replace(/,/g, '');
+                const num = parseFloat(cleaned);
+                return isNaN(num) ? 0 : num;
+            }
+            return 0;
+        }
+
+        function getModeMultiplier(modeValue) {
+            return parseFloat(modeValue) || 1;
+        }
+
+        function getModeLabel(modeValue) {
+            return MODES[modeValue] ? MODES[modeValue].label : modeValue;
+        }
+
+        function isZmei6(boss) {
+            return boss.name === 'Змей' && boss.mode === '6';
+        }
+
+        function getZmeiThreshold(boss) {
+            if (!isZmei6(boss)) return 0;
+            const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+            const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+            return thresholds[idx] || 0;
+        }
+
+        function getHpPerAttack(boss) {
+            return boss.baseHp * getModeMultiplier(boss.mode);
+        }
+
+        function getTotalHp(boss) {
+            return getHpPerAttack(boss) * boss.attackLimit;
+        }
+
+        function isModeLabel(text) {
+            return /Пацанский|Блатной|Авторитетный|Воровской/.test(text);
+        }
+
+        function parseModeFromLabel(modeLabel) {
+            if (modeLabel.includes('Блатной')) return '3';
+            if (modeLabel.includes('Авторитетный')) return '6';
+            if (modeLabel.includes('Воровской')) return '12';
+            return '1';
+        }
+
+        function resolveBaseHp(name, baseHpFromFile, mode, hpPerAttackFromFile) {
+            if (BOSSES[name]) return BOSSES[name].hp;
+            if (baseHpFromFile > 0) return baseHpFromFile;
+            if (hpPerAttackFromFile > 0) return hpPerAttackFromFile / getModeMultiplier(mode);
+            return 0;
+        }
+
+        function parseImportRow(cols) {
+            if (cols.length < 7) return null;
+            const name = (typeof cols[0] === 'string' ? cols[0] : cols[0].textContent).trim() || 'Босс';
+            if (name.toUpperCase() === 'ИТОГО') return null;
+
+            let mode, baseHp, dmgPerTatu, tatuPerAttack, attackLimit;
+
+            if (isModeLabel(typeof cols[1] === 'string' ? cols[1] : cols[1].textContent)) {
+                const modeLabel = (typeof cols[1] === 'string' ? cols[1] : cols[1].textContent).trim();
+                mode = parseModeFromLabel(modeLabel);
+                const hpPerAttack = parseNumber(typeof cols[2] === 'string' ? cols[2] : cols[2].textContent);
+                baseHp = resolveBaseHp(name, 0, mode, hpPerAttack);
+                dmgPerTatu = parseNumber(typeof cols[4] === 'string' ? cols[4] : cols[4].textContent);
+                tatuPerAttack = parseInt(typeof cols[5] === 'string' ? cols[5] : cols[5].textContent) || 0;
+                attackLimit = parseInt(typeof cols[6] === 'string' ? cols[6] : cols[6].textContent) || 9;
+            } else {
+                baseHp = parseNumber(typeof cols[1] === 'string' ? cols[1] : cols[1].textContent);
+                const modeLabel = (typeof cols[2] === 'string' ? cols[2] : cols[2].textContent).trim();
+                mode = parseModeFromLabel(modeLabel);
+                baseHp = resolveBaseHp(name, baseHp, mode, 0);
+                dmgPerTatu = parseNumber(typeof cols[4] === 'string' ? cols[4] : cols[4].textContent);
+                tatuPerAttack = parseInt(typeof cols[5] === 'string' ? cols[5] : cols[5].textContent) || 0;
+                attackLimit = parseInt(typeof cols[6] === 'string' ? cols[6] : cols[6].textContent) || 9;
+            }
+
+            if (baseHp > 0 && dmgPerTatu > 0 && attackLimit > 0) {
+                return { name, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit };
+            }
+            return null;
+        }
+
+        function updateForm() {
+            const bossName = bossSelect.value;
+            const bossData = BOSSES[bossName];
+            if (!bossData) {
+                displayBaseHp.textContent = '0';
+                displayDmgPerTatu.textContent = '0';
+                displayMaxTatu.textContent = '0';
+                tatuSelect.innerHTML = '';
+                noDopMessage.style.display = 'none';
+                noDopCard.style.display = 'none';
+                addBtn.disabled = true;
+                modeSelect.innerHTML = '<option value="">— Нет босса —</option>';
+                return;
+            }
+
+            const availableModes = Object.keys(bossData.modes).sort((a,b) => parseInt(a)-parseInt(b));
+            modeSelect.innerHTML = '';
+            if (availableModes.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = '— Нет режимов —';
+                modeSelect.appendChild(opt);
+                displayBaseHp.textContent = fmt(bossData.hp);
+                displayDmgPerTatu.textContent = '—';
+                displayMaxTatu.textContent = '0';
+                tatuSelect.innerHTML = '';
+                noDopMessage.style.display = 'block';
+                noDopCard.style.display = 'block';
+                addBtn.disabled = true;
+                return;
+            }
+            availableModes.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = MODES[m].label + ' (×' + MODES[m].multiplier + ')';
+                modeSelect.appendChild(opt);
+            });
+            const currentMode = modeSelect.value;
+            if (availableModes.includes(currentMode)) {
+                modeSelect.value = currentMode;
+            } else {
+                modeSelect.value = availableModes[0];
+            }
+            updateModeInfo();
+        }
+
+        function updateModeInfo() {
+            const bossName = bossSelect.value;
+            const mode = modeSelect.value;
+            const bossData = BOSSES[bossName];
+            if (!bossData || !mode) {
+                displayBaseHp.textContent = '0';
+                displayDmgPerTatu.textContent = '0';
+                displayMaxTatu.textContent = '0';
+                tatuSelect.innerHTML = '';
+                noDopMessage.style.display = 'none';
+                noDopCard.style.display = 'none';
+                addBtn.disabled = true;
+                return;
+            }
+
+            const modeData = bossData.modes[mode];
+            if (!modeData) {
+                displayBaseHp.textContent = fmt(getHpPerAttack({ baseHp: bossData.hp, mode: mode }));
+                displayDmgPerTatu.textContent = '—';
+                displayMaxTatu.textContent = '0';
+                tatuSelect.innerHTML = '';
+                noDopMessage.style.display = 'block';
+                noDopCard.style.display = 'block';
+                addBtn.disabled = true;
+                return;
+            }
+
+            displayBaseHp.textContent = fmt(getHpPerAttack({ baseHp: bossData.hp, mode: mode }));
+            const dmg = modeData.dmg;
+            const max = modeData.max;
+            const thresholds = modeData.thresholds;
+
+            if (thresholds && thresholds.length > 1) {
+                displayDmgPerTatu.textContent = fmt(thresholds[1]) + ' (пороги)';
+            } else {
+                displayDmgPerTatu.textContent = dmg !== null ? fmt(dmg) : 'нет';
+            }
+
+            displayMaxTatu.textContent = max || 0;
+
+            tatuSelect.innerHTML = '';
+            if (max > 0 && dmg !== null) {
+                for (let i = 1; i <= max; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = i;
+                    tatuSelect.appendChild(opt);
+                }
+                noDopMessage.style.display = 'none';
+                noDopCard.style.display = 'none';
+                addBtn.disabled = false;
+            } else {
+                tatuSelect.innerHTML = '';
+                noDopMessage.style.display = 'block';
+                noDopCard.style.display = 'block';
+                addBtn.disabled = true;
+            }
+        }
+
+        function populateBossSelect() {
+            bossSelect.innerHTML = '';
+            const names = Object.keys(BOSSES).sort((a, b) => BOSSES[a].hp - BOSSES[b].hp);
+            names.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name + ' (HP ' + fmt(BOSSES[name].hp) + ')';
+                bossSelect.appendChild(opt);
+            });
+            if (bossSelect.options.length > 0) {
+                bossSelect.selectedIndex = 0;
+            }
+            updateForm();
+        }
+        bossSelect.addEventListener('change', updateForm);
+        modeSelect.addEventListener('change', updateModeInfo);
+
+        function addFromForm() {
+            const bossName = bossSelect.value;
+            const mode = modeSelect.value;
+            const attackLimit = parseInt(attackLimitInput.value) || 9;
+            const tatuPerAttack = parseInt(tatuSelect.value) || 0;
+
+            const bossData = BOSSES[bossName];
+            if (!bossData) return;
+            const modeData = bossData.modes[mode];
+            if (!modeData || modeData.max === 0 || modeData.dmg === null) {
+                showToast('⚠️ Для выбранного режима нет дополнительных наград');
+                return;
+            }
+
+            const baseHp = bossData.hp;
+            const dmgPerTatu = modeData.dmg;
+
+            addBoss(bossName, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit);
+        }
+        addBtn.addEventListener('click', addFromForm);
+        container.querySelector('#addForm').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addFromForm();
+            }
+        });
+
+        function addBoss(name, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit) {
+            const effectiveHp = getHpPerAttack({ baseHp: baseHp, mode: mode });
+            const boss = {
+                id: nextId++,
+                name: name.trim() || 'Босс',
+                baseHp: baseHp,
+                mode: mode,
+                effectiveHp: effectiveHp,
+                dmgPerTatu: dmgPerTatu,
+                tatuPerAttack: tatuPerAttack,
+                attackLimit: attackLimit
+            };
+            bosses.push(boss);
+            saveToLocalStorage();
+            renderTable();
+            updateStats();
+            showToast(`✅ Босс "${boss.name}" добавлен`);
+        }
+
+        function deleteBoss(id) {
+            bosses = bosses.filter(b => b.id !== id);
+            saveToLocalStorage();
+            renderTable();
+            updateStats();
+            showToast('🗑 Босс удалён');
+        }
+
+        function clearAll() {
+            if (bosses.length === 0) {
+                showToast('⚠️ Нет данных для очистки');
+                return;
+            }
+            if (confirm('Вы уверены, что хотите удалить всех боссов? Данные будут потеряны.')) {
+                bosses = [];
+                nextId = 1;
+                saveToLocalStorage();
+                renderTable();
+                updateStats();
+                showToast('🗑 Все данные очищены');
+            }
+        }
+        clearBtn.addEventListener('click', clearAll);
+
+        function updateStats() {
+            statBosses.textContent = bosses.length;
+            let sumDmg = 0, sumExtra = 0, sumAll = 0;
+            let sumHp = 0;
+            bosses.forEach(boss => {
+                let dmgPerAttack;
+                if (isZmei6(boss)) {
+                    dmgPerAttack = getZmeiThreshold(boss);
+                } else {
+                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                }
+                const totalDmg = dmgPerAttack * boss.attackLimit;
+                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
+                const winTatu = boss.attackLimit;
+                const allTatu = extraTatu + winTatu;
+                sumDmg += totalDmg;
+                sumExtra += extraTatu;
+                sumAll += allTatu;
+                sumHp += getTotalHp(boss);
+            });
+            statTotalHp.textContent = fmt(sumHp);
+            statTotalDmg.textContent = fmt(sumDmg);
+            statExtraTatu.textContent = fmt(sumExtra);
+            statAllTatu.textContent = fmt(sumAll);
+            totalDmg.textContent = fmt(sumDmg);
+            totalExtraTatu.textContent = fmt(sumExtra);
+            totalWinTatu.textContent = fmt(sumDmg > 0 ? bosses.reduce((s, b) => s + b.attackLimit, 0) : 0);
+            totalAllTatu.textContent = fmt(sumAll);
+            totalHp.textContent = fmt(sumHp);
+        }
+
+        function renderTable() {
+            if (bosses.length === 0) {
+                tableBody.innerHTML = '';
+                tableFoot.style.display = 'none';
+                emptyMessage.style.display = 'block';
+                return;
+            }
+            emptyMessage.style.display = 'none';
+            tableFoot.style.display = 'table-footer-group';
+
+            let html = '';
+            bosses.forEach((boss, index) => {
+                let dmgPerAttack;
+                let displayDmg;
+                const isZmei = isZmei6(boss);
+
+                if (isZmei) {
+                    dmgPerAttack = getZmeiThreshold(boss);
+                    const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                    const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                    displayDmg = thresholds[idx] || 0;
+                } else {
+                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                    displayDmg = boss.dmgPerTatu;
+                }
+
+                const totalDmg = dmgPerAttack * boss.attackLimit;
+                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
+                const winTatu = boss.attackLimit;
+                const allTatu = extraTatu + winTatu;
+
+                html += `<tr class="boss-row" data-index="${index}">`;
+                html += `<td><span class="static-text">${boss.name}</span></td>`;
+                html += `<td><span class="static-text">${getModeLabel(boss.mode)}</span></td>`;
+                html += `<td><span class="static-text">${fmt(getHpPerAttack(boss))}</span></td>`;
+                html += `<td><span class="static-text">${fmt(getTotalHp(boss))}</span></td>`;
+                html += `<td><span class="static-text">${fmt(displayDmg)}</span></td>`;
+                html += `<td><span class="static-text">${boss.tatuPerAttack}</span></td>`;
+                html += `<td><span class="static-text">${boss.attackLimit}</span></td>`;
+                html += `<td><span class="static-text">${fmt(dmgPerAttack)}</span></td>`;
+                html += `<td><span class="static-text">${fmt(totalDmg)}</span></td>`;
+                html += `<td><span class="static-text">${fmt(extraTatu)}</span></td>`;
+                html += `<td><span class="static-text">${fmt(winTatu)}</span></td>`;
+                html += `<td><span class="static-text">${fmt(allTatu)}</span></td>`;
+                html += `<td><button class="del-btn" data-id="${boss.id}">✕</button></td>`;
+                html += `</tr>`;
+            });
+
+            tableBody.innerHTML = html;
+            updateStats();
+
+            container.querySelectorAll('.del-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    deleteBoss(id);
+                });
+            });
+        }
+
+        function saveToLocalStorage() {
+            const data = { bosses, nextId };
+            localStorage.setItem('bossCalculatorData', JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage() {
+            const stored = localStorage.getItem('bossCalculatorData');
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    bosses = data.bosses || [];
+                    nextId = data.nextId || 1;
+                    return true;
+                } catch (e) {
+                    console.warn('Ошибка парсинга localStorage', e);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        function exportTSV() {
+            if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
+            let header = ['Босс','Режим','HP','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
+            let rows = [];
+            bosses.forEach(boss => {
+                let dmgPerAttack, displayDmg;
+                if (isZmei6(boss)) {
+                    dmgPerAttack = getZmeiThreshold(boss);
+                    const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                    const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                    displayDmg = thresholds[idx] || 0;
+                } else {
+                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                    displayDmg = boss.dmgPerTatu;
+                }
+                const totalDmg = dmgPerAttack * boss.attackLimit;
+                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
+                const winTatu = boss.attackLimit;
+                const allTatu = extraTatu + winTatu;
+                rows.push([boss.name, getModeLabel(boss.mode), getHpPerAttack(boss), getTotalHp(boss), displayDmg, boss.tatuPerAttack, boss.attackLimit, dmgPerAttack, totalDmg, extraTatu, winTatu, allTatu]);
+            });
+            let sumHp=0,sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
+            bosses.forEach(boss => {
+                let dmgPerAttack;
+                if (isZmei6(boss)) {
+                    dmgPerAttack = getZmeiThreshold(boss);
+                } else {
+                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                }
+                const totalDmg = dmgPerAttack * boss.attackLimit;
+                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
+                const winTatu = boss.attackLimit;
+                const allTatu = extraTatu + winTatu;
+                sumHp += getTotalHp(boss);
+                sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
+            });
+            rows.push(['ИТОГО','','',sumHp,'','','','',sumDmg,sumExtra,sumWin,sumAll]);
+            let tsv = header.join('\t') + '\n';
+            rows.forEach(row => tsv += row.join('\t') + '\n');
+            return tsv;
+        }
+
+        function exportXLS() {
+            if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}</style></head><body>`;
+            const headers = ['Босс','Режим','HP','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
+            html += '<table><thead><tr>';
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += '</tr></thead><tbody>';
+            bosses.forEach(boss => {
+                let dmgPerAttack, displayDmg;
+                if (isZmei6(boss)) {
+                    dmgPerAttack = getZmeiThreshold(boss);
+                    const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                    const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                    displayDmg = thresholds[idx] || 0;
+                } else {
+                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                    displayDmg = boss.dmgPerTatu;
+                }
+                const totalDmg = dmgPerAttack * boss.attackLimit;
+                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
+                const winTatu = boss.attackLimit;
+                const allTatu = extraTatu + winTatu;
+                html += `<tr><td>${boss.name}</td><td>${getModeLabel(boss.mode)}</td><td>${fmt(getHpPerAttack(boss))}</td><td>${fmt(getTotalHp(boss))}</td><td>${fmt(displayDmg)}</td><td>${boss.tatuPerAttack}</td><td>${boss.attackLimit}</td><td>${fmt(dmgPerAttack)}</td><td>${fmt(totalDmg)}</td><td>${fmt(extraTatu)}</td><td>${fmt(winTatu)}</td><td>${fmt(allTatu)}</td></tr>`;
+            });
+            let sumHp=0,sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
+            bosses.forEach(boss => {
+                let dmgPerAttack;
+                if (isZmei6(boss)) {
+                    dmgPerAttack = getZmeiThreshold(boss);
+                } else {
+                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                }
+                const totalDmg = dmgPerAttack * boss.attackLimit;
+                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
+                const winTatu = boss.attackLimit;
+                const allTatu = extraTatu + winTatu;
+                sumHp += getTotalHp(boss);
+                sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
+            });
+            html += `<tr class="total"><td colspan="2">ИТОГО</td><td></td><td>${fmt(sumHp)}</td><td colspan="4"></td><td>${fmt(sumDmg)}</td><td>${fmt(sumExtra)}</td><td>${fmt(sumWin)}</td><td>${fmt(sumAll)}</td></tr>`;
+            html += '</tbody></table></body></html>';
+            return html;
+        }
+
+        function exportData() {
+            const format = exportFormat.value;
+            let content, filename, mime;
+            if (format === 'tsv') {
+                content = exportTSV();
+                if (!content) return;
+                filename = 'boss_calculator_data.tsv';
+                mime = 'text/tab-separated-values;charset=utf-8';
+            } else {
+                content = exportXLS();
+                if (!content) return;
+                filename = 'boss_calculator_data.xls';
+                mime = 'application/vnd.ms-excel;charset=utf-8';
+            }
+            const blob = new Blob([content], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`📄 Экспорт в ${format.toUpperCase()} выполнен`);
+        }
+        exportBtn.addEventListener('click', exportData);
+
+        function importFromFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    const isHtml = text.trim().startsWith('<') && text.includes('<table');
+                    let newBosses = [];
+                    if (isHtml) {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(text, 'text/html');
+                        const rows = doc.querySelectorAll('table tbody tr');
+                        rows.forEach(row => {
+                            const cols = row.querySelectorAll('td');
+                            const parsed = parseImportRow(cols);
+                            if (parsed) newBosses.push(parsed);
+                        });
+                    } else {
+                        const lines = text.split('\n').filter(line => line.trim() !== '');
+                        if (lines.length < 2) { showToast('⚠️ Файл пуст или имеет неверный формат'); return; }
+                        for (let i = 1; i < lines.length; i++) {
+                            const cols = lines[i].split('\t');
+                            const parsed = parseImportRow(cols);
+                            if (parsed) newBosses.push(parsed);
+                        }
+                    }
+                    if (newBosses.length === 0) { showToast('⚠️ Не найдено данных для импорта'); return; }
+
+                    newBosses = newBosses.map(b => {
+                        if (b.name === 'Змей' && b.mode === '6') {
+                            const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                            b.dmgPerTatu = thresholds[1] || 28000000;
+                        }
+                        return b;
+                    });
+
+                    bosses = [];
+                    nextId = 1;
+                    newBosses.forEach(b => {
+                        const effHp = getHpPerAttack({ baseHp: b.baseHp, mode: b.mode });
+                        bosses.push({
+                            id: nextId++,
+                            name: b.name,
+                            baseHp: b.baseHp,
+                            mode: b.mode,
+                            effectiveHp: effHp,
+                            dmgPerTatu: b.dmgPerTatu,
+                            tatuPerAttack: b.tatuPerAttack,
+                            attackLimit: b.attackLimit
+                        });
+                    });
+                    saveToLocalStorage();
+                    renderTable();
+                    updateStats();
+                    showToast(`📂 Импортировано ${newBosses.length} боссов`);
+                } catch (err) {
+                    console.error(err);
+                    showToast('⚠️ Ошибка при импорте');
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+        importBtn.addEventListener('click', function() { fileInput.click(); });
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                importFromFile(this.files[0]);
+                this.value = '';
+            }
+        });
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const toastEl = document.getElementById('toast');
+            if (!toastEl) return;
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        }
+
+        function initCalculator() {
+            populateBossSelect();
+            const hasData = loadFromLocalStorage();
+            if (!hasData || bosses.length === 0) {
+                const examples = [
+                    { name: 'Змей', mode: '1', tatuPerAttack: 2, attackLimit: 3 },
+                    { name: 'Бугор', mode: '12', tatuPerAttack: 2, attackLimit: 9 },
+                    { name: 'Крест', mode: '6', tatuPerAttack: 2, attackLimit: 7 }
+                ];
+                examples.forEach(ex => {
+                    const bossData = BOSSES[ex.name];
+                    if (!bossData) return;
+                    const modeData = bossData.modes[ex.mode];
+                    if (!modeData || modeData.max === 0 || modeData.dmg === null) return;
+                    const effHp = getHpPerAttack({ baseHp: bossData.hp, mode: ex.mode });
+                    bosses.push({
+                        id: nextId++,
+                        name: ex.name,
+                        baseHp: bossData.hp,
+                        mode: ex.mode,
+                        effectiveHp: effHp,
+                        dmgPerTatu: modeData.dmg,
+                        tatuPerAttack: ex.tatuPerAttack,
+                        attackLimit: ex.attackLimit
+                    });
+                });
+                saveToLocalStorage();
+            }
+            renderTable();
+            updateStats();
+        }
+        initCalculator();
+    })();
+
+    // ================================================================
+    // 5. СКРИПТ СПИСКА БОССОВ (второй файл)
+    // ================================================================
+    (function bossList() {
+        'use strict';
+
+        const bosses = [
+            // Беспредельщики (21)
+            { name: "Кирпич",    category: "Беспредельщики", hp: 1000,      modes: ["Пацанский"] },
+            { name: "Сизый",     category: "Беспредельщики", hp: 10000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Махно",     category: "Беспредельщики", hp: 50000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Лютый",     category: "Беспредельщики", hp: 100000,    modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Гастролёр", category: "Беспредельщики", hp: 150000,    modes: ["Пацанский"] },
+            { name: "Шайба",     category: "Беспредельщики", hp: 500000,    modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Бурят",     category: "Беспредельщики", hp: 2000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Дядя Миша", category: "Беспредельщики", hp: 3000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Бандяк",    category: "Беспредельщики", hp: 5000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Абу",       category: "Беспредельщики", hp: 8000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Гризли",    category: "Беспредельщики", hp: 10000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Феня",      category: "Беспредельщики", hp: 15000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Север",     category: "Беспредельщики", hp: 20000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Хирург",    category: "Беспредельщики", hp: 30000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Пресс",     category: "Беспредельщики", hp: 70000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Немой",     category: "Беспредельщики", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Бидон",     category: "Беспредельщики", hp: 300000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Воркута",   category: "Беспредельщики", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Бугор",     category: "Беспредельщики", hp: 1000000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Змей",      category: "Беспредельщики", hp: 13000000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Гвоздь",    category: "Беспредельщики", hp: 25000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            // Надзиратели (16)
+            { name: "Палыч",     category: "Надзиратели", hp: 100000,    modes: ["Пацанский"] },
+            { name: "Циклоп",    category: "Надзиратели", hp: 300000,    modes: ["Пацанский"] },
+            { name: "Раиса",     category: "Надзиратели", hp: 300000,    modes: ["Пацанский"] },
+            { name: "Бес",       category: "Надзиратели", hp: 700000,    modes: ["Пацанский"] },
+            { name: "Паленый",   category: "Надзиратели", hp: 1500000,   modes: ["Пацанский"] },
+            { name: "Близнецы",  category: "Надзиратели", hp: 2000000,   modes: ["Пацанский"] },
+            { name: "Борзов",    category: "Надзиратели", hp: 3000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Цербер",    category: "Надзиратели", hp: 5000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Конвой",    category: "Надзиратели", hp: 10000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Бульдозер", category: "Надзиратели", hp: 15000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Кусто",     category: "Надзиратели", hp: 20000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Фин",       category: "Надзиратели", hp: 30000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Дюбель",    category: "Надзиратели", hp: 40000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Чугун",     category: "Надзиратели", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Кнут",      category: "Надзиратели", hp: 500000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Крест",     category: "Надзиратели", hp: 5000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            // Рецидивисты (6) — без Воровского
+            { name: "Жестянщики", category: "Рецидивисты", hp: 1000000,   modes: ["Пацанский"] },
+            { name: "Отбой",      category: "Рецидивисты", hp: 5000000,   modes: ["Пацанский"] },
+            { name: "Боцман",     category: "Рецидивисты", hp: 10000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Жульбаны",   category: "Рецидивисты", hp: 50000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Шнифер",     category: "Рецидивисты", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Бивень",     category: "Рецидивисты", hp: 150000000, modes: ["Пацанский", "Блатной", "Авторитетный"] }
+        ];
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function getHpClass(hp) {
+            if (hp <= 300000) return 'hp-low';
+            if (hp <= 2000000) return 'hp-mid';
+            if (hp <= 100000000) return 'hp-high';
+            return 'hp-vhigh';
+        }
+
+        const modeMultipliers = {
+            'Пацанский': 1,
+            'Блатной': 3,
+            'Авторитетный': 6,
+            'Воровской': 12
+        };
+
+        const columnsConfig = {
+            'Беспредельщики': ['Босс', 'Пацанский', 'Блатной', 'Авторитетный', 'Воровской'],
+            'Надзиратели':    ['Босс', 'Пацанский', 'Блатной', 'Авторитетный', 'Воровской'],
+            'Рецидивисты':    ['Босс', 'Пацанский', 'Блатной', 'Авторитетный']
+        };
+
+        const categories = ['Беспредельщики', 'Надзиратели', 'Рецидивисты'];
+        const grouped = {};
+        categories.forEach(cat => {
+            grouped[cat] = bosses.filter(b => b.category === cat);
+        });
+
+        const container = document.getElementById('tab-bosslist');
+        const tablesContainer = container.querySelector('#tablesContainer2');
+        tablesContainer.innerHTML = '';
+
+        function buildTable(category, bossList) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'table-wrapper';
+
+            let catClass = '';
+            if (category === 'Беспредельщики') catClass = 'cat-besprel';
+            else if (category === 'Надзиратели') catClass = 'cat-nadzir';
+            else if (category === 'Рецидивисты') catClass = 'cat-recidiv';
+            wrapper.classList.add(catClass);
+
+            const header = document.createElement('div');
+            header.className = 'table-header';
+            header.innerHTML = `<span>${category}</span><span class="count">(${bossList.length})</span>`;
+            wrapper.appendChild(header);
+
+            const scrollDiv = document.createElement('div');
+            scrollDiv.className = 'table-scroll';
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const trHead = document.createElement('tr');
+
+            const columns = columnsConfig[category] || ['Босс', 'Пацанский', 'Блатной', 'Авторитетный'];
+            columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col;
+                trHead.appendChild(th);
+            });
+            thead.appendChild(trHead);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            bossList.forEach(boss => {
+                const tr = document.createElement('tr');
+                const tdName = document.createElement('td');
+                tdName.className = 'col-boss';
+                tdName.textContent = boss.name;
+                tr.appendChild(tdName);
+
+                for (let i = 1; i < columns.length; i++) {
+                    const mode = columns[i];
+                    const td = document.createElement('td');
+                    td.className = 'hp-cell';
+                    if (boss.modes.includes(mode)) {
+                        const hp = boss.hp * modeMultipliers[mode];
+                        td.textContent = formatNumber(hp);
+                        td.classList.add(getHpClass(hp));
+                    } else {
+                        td.classList.add('empty');
+                        td.textContent = '';
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            scrollDiv.appendChild(table);
+            wrapper.appendChild(scrollDiv);
+            return wrapper;
+        }
+
+        categories.forEach(cat => {
+            const list = grouped[cat] || [];
+            if (list.length === 0) return;
+            const tableEl = buildTable(cat, list);
+            tablesContainer.appendChild(tableEl);
+        });
+
+        document.getElementById('exportBtn2').addEventListener('click', function() {
+            let html = `
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background: white; }
+                    h1 { font-size: 24px; }
+                    .tables-grid { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
+                    .table-wrapper { border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+                    .table-header { background: #f0f0f0; padding: 10px 14px; font-weight: bold; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; }
+                    .table-scroll { overflow: auto; }
+                    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+                    th { background: #e9ecef; padding: 6px 8px; border: 1px solid #ccc; text-align: left; white-space: nowrap; }
+                    td { padding: 5px 8px; border: 1px solid #ccc; text-align: left; white-space: nowrap; }
+                    .col-boss { font-weight: 500; }
+                    .hp-cell { text-align: right; padding-right: 10px; }
+                    .hp-low { background: #e6f4e6; }
+                    .hp-mid { background: #fff9e6; }
+                    .hp-high { background: #ffede0; }
+                    .hp-vhigh { background: #fce4e4; }
+                    .empty { background: white !important; color: #999; }
+                    .cat-besprel .table-header { background: #e6f0fa; color: #1e3a8a; }
+                    .cat-nadzir .table-header { background: #fef3e6; color: #92400e; }
+                    .cat-recidiv .table-header { background: #f3e8ff; color: #5b21b6; }
+                </style>
+            </head>
+            <body>
+                <h1>📋 Боссы</h1>
+                <div class="tables-grid">
+            `;
+
+            categories.forEach(cat => {
+                const list = grouped[cat] || [];
+                if (list.length === 0) return;
+                const catClass = cat === 'Беспредельщики' ? 'cat-besprel' :
+                                 cat === 'Надзиратели' ? 'cat-nadzir' : 'cat-recidiv';
+                const columns = columnsConfig[cat] || ['Босс', 'Пацанский', 'Блатной', 'Авторитетный'];
+
+                html += `
+                <div class="table-wrapper ${catClass}">
+                    <div class="table-header">
+                        <span>${cat}</span>
+                        <span>(${list.length})</span>
+                    </div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                `;
+                columns.forEach(col => {
+                    html += `<th>${col}</th>`;
+                });
+                html += `</tr></thead><tbody>`;
+
+                list.forEach(boss => {
+                    html += `<tr><td class="col-boss">${boss.name}</td>`;
+                    for (let i = 1; i < columns.length; i++) {
+                        const mode = columns[i];
+                        if (boss.modes.includes(mode)) {
+                            const hp = boss.hp * modeMultipliers[mode];
+                            const cls = getHpClass(hp);
+                            html += `<td class="hp-cell ${cls}">${formatNumber(hp)}</td>`;
+                        } else {
+                            html += `<td class="hp-cell empty"></td>`;
+                        }
+                    }
+                    html += `</tr>`;
+                });
+                html += `</tbody></table></div></div>`;
+            });
+
+            html += `
+                </div>
+            </body>
+            </html>
+            `;
+
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = 'bosses_list.xls';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+    })();
+
 </script>
-
 </body>
 </html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
     <title>Боссы — Калькулятор + Список</title>
     <style>
-        /* ===== ОБЩИЕ СТИЛИ ===== */
+        /* ===== ОБЩИЕ СТИЛИ (без изменений) ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -335,7 +335,6 @@
         #tab-calculator .actions-bar .btn-primary:hover { background: var(--bg-btn-primary-hover); }
         #tab-calculator .actions-bar .btn-danger { background: var(--bg-btn-danger); color: #b33a3a; }
         #tab-calculator .actions-bar .btn-danger:hover { background: var(--bg-btn-danger-hover); color: #a00000; }
-        /* Две кнопки экспорта без селекта */
         #tab-calculator .actions-bar .btn-export-png {
             background: var(--bg-btn-primary);
             color: var(--text-inverse);
@@ -978,7 +977,7 @@
     }
 
     // ================================================================
-    // 4. СКРИПТ КАЛЬКУЛЯТОРА (первый файл)
+    // 4. СКРИПТ КАЛЬКУЛЯТОРА (первый файл) — с обновлёнными допками
     // ================================================================
     (function calculator() {
         'use strict';
@@ -1092,22 +1091,23 @@
                     '6': { dmg: null, max: 0 }
                 }
             },
-            // Новые боссы (пока без допок)
+            // Новые боссы с допками
             'Старшой': {
                 hp: 600000000,
                 modes: {
-                    '1': { dmg: null, max: 0 },
-                    '3': { dmg: null, max: 0 },
-                    '6': { dmg: null, max: 0 },
-                    '12': { dmg: null, max: 0 }
+                    '1': { dmg: null, max: 0 }, // Пацанский нет
+                    '3': { dmg: null, max: 0 }, // Блатной нет
+                    '6': { dmg: 24000000, max: 3 }, // Авторитетный
+                    '12': { dmg: 52500000, max: 2 } // Воровской
                 }
             },
             'Дантист': {
                 hp: 100000000,
                 modes: {
-                    '1': { dmg: null, max: 0 },
-                    '3': { dmg: null, max: 0 },
-                    '6': { dmg: null, max: 0 }
+                    '1': { dmg: null, max: 0 }, // Пацанский нет
+                    '3': { dmg: 9000000, max: 2 }, // Блатной
+                    '6': { dmg: 12000000, max: 2 } // Авторитетный
+                    // Воровской отсутствует
                 }
             },
             'Контрабас': {
@@ -1352,7 +1352,6 @@
 
         function populateBossSelect() {
             bossSelect.innerHTML = '';
-            // Фильтруем боссов: оставляем только тех, у которых есть хоть один режим с доп. наградой
             const names = Object.keys(BOSSES)
                 .filter(name => {
                     const boss = BOSSES[name];
@@ -1550,7 +1549,6 @@
             tableBody.innerHTML = html;
             updateStats();
 
-            // Обработчики для индивидуальных удалений
             container.querySelectorAll('.del-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = parseInt(this.dataset.id);
@@ -1558,7 +1556,6 @@
                 });
             });
 
-            // Синхронизация "выбрать все" с чекбоксами
             const checkboxes = container.querySelectorAll('.row-checkbox');
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', function() {
@@ -1566,7 +1563,6 @@
                     selectAll.checked = allChecked;
                 });
             });
-            // При клике на selectAll обновляем все чекбоксы
             selectAll.checked = false;
         }
 
@@ -1677,7 +1673,6 @@
             return html;
         }
 
-        // === ФУНКЦИЯ ДЛЯ ЭКСПОРТА PNG ===
         function exportPNG() {
             const wrap = document.getElementById('tableWrap');
             if (!wrap) {
@@ -1710,7 +1705,6 @@
             document.head.appendChild(script);
         }
 
-        // Обработчики для кнопок экспорта
         exportBtnExcel.addEventListener('click', function() {
             const content = exportXLS();
             if (!content) return;
@@ -1728,7 +1722,6 @@
 
         exportBtnPng.addEventListener('click', exportPNG);
 
-        // Импорт
         function importFromFile(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1857,7 +1850,6 @@
             { name: "Хирург",    category: "Беспредельщики", hp: 30000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Пресс",     category: "Беспредельщики", hp: 70000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Немой",     category: "Беспредельщики", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
-            // Дантист УБРАН из Беспредельщиков
             { name: "Бидон",     category: "Беспредельщики", hp: 300000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Воркута",   category: "Беспредельщики", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Старшой",   category: "Беспредельщики", hp: 600000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
@@ -1919,7 +1911,6 @@
         };
 
         const categories = ['Беспредельщики', 'Надзиратели', 'Рецидивисты'];
-        // Группируем и сортируем по HP внутри каждой категории
         const grouped = {};
         categories.forEach(cat => {
             grouped[cat] = bosses.filter(b => b.category === cat)

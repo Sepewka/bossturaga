@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
     <title>Боссы — Калькулятор + Список</title>
     <style>
-        /* ===== ОБЩИЕ СТИЛИ (без изменений) ===== */
+        /* ===== ОБЩИЕ СТИЛИ ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -335,16 +335,14 @@
         #tab-calculator .actions-bar .btn-primary:hover { background: var(--bg-btn-primary-hover); }
         #tab-calculator .actions-bar .btn-danger { background: var(--bg-btn-danger); color: #b33a3a; }
         #tab-calculator .actions-bar .btn-danger:hover { background: var(--bg-btn-danger-hover); color: #a00000; }
-        #tab-calculator .actions-bar .export-select {
-            padding: 8px 14px; border-radius: var(--radius-btn); border: 2px solid var(--border-input);
-            background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-weight: 500;
-            outline: none; cursor: pointer; transition: border-color var(--transition), background var(--transition), color var(--transition);
-            min-height: 40px;
-            appearance: auto;
-            background-image: none;
-            padding-right: 14px;
+        /* Две кнопки экспорта без селекта */
+        #tab-calculator .actions-bar .btn-export-png {
+            background: var(--bg-btn-primary);
+            color: var(--text-inverse);
         }
-        #tab-calculator .actions-bar .export-select:focus { border-color: var(--text-link); }
+        #tab-calculator .actions-bar .btn-export-png:hover {
+            background: var(--bg-btn-primary-hover);
+        }
 
         #tab-calculator .table-wrap {
             position: relative;
@@ -695,7 +693,7 @@
             #tab-calculator .stats-grid { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom: 14px; }
             #tab-calculator .stat-card .stat-value { font-size:20px; }
             #tab-calculator .actions-bar { flex-direction:column; align-items:stretch; }
-            #tab-calculator .actions-bar .btn, #tab-calculator .actions-bar .export-select { justify-content:center; width:100%; }
+            #tab-calculator .actions-bar .btn { justify-content:center; width:100%; }
             #tab-calculator table.boss-table { font-size:11px; min-width:820px; }
             #tab-calculator table.boss-table th, #tab-calculator table.boss-table td { padding:8px 6px; }
             #tab-calculator table.boss-table th:first-child,
@@ -819,8 +817,8 @@
 
         <!-- ACTIONS -->
         <div class="actions-bar">
-            <select class="export-select" id="exportFormat"><option value="tsv">TSV (для Excel)</option><option value="xls" selected>Excel (.xls)</option></select>
-            <button class="btn btn-primary" id="exportBtn">📄 Экспорт</button>
+            <button class="btn btn-primary" id="exportBtnExcel">📄 Экспорт Excel</button>
+            <button class="btn btn-primary btn-export-png" id="exportBtnPng">🖼 Экспорт PNG</button>
             <button class="btn btn-primary" id="importBtn">📂 Импорт</button>
             <button class="btn btn-danger" id="clearBtn">🗑 Очистить всё</button>
             <button class="btn btn-danger" id="deleteSelectedBtn">🗑 Удалить выбранных</button>
@@ -829,7 +827,7 @@
 
         <!-- TABLE -->
         <p class="scroll-hint">← Листайте таблицу влево-вправо →</p>
-        <div class="table-wrap">
+        <div class="table-wrap" id="tableWrap">
             <table class="boss-table" id="bossTable">
                 <thead>
                     <tr>
@@ -875,7 +873,7 @@
             <p><strong>1. Добавление босса:</strong> Выберите босса из списка, затем режим. Количество допок выбирается автоматически из доступных вариантов. Если режим не даёт допок, кнопка добавления будет заблокирована.</p>
             <p><strong>2. Таблица только для просмотра:</strong> Все изменения вносятся через форму добавления вверху. В таблице нельзя редактировать данные напрямую.</p>
             <p><strong>3. Автосохранение:</strong> Все данные сохраняются в браузере (localStorage) и восстанавливаются при повторном открытии страницы.</p>
-            <p><strong>4. Экспорт:</strong> Выберите формат (TSV или Excel) и нажмите «Экспорт» — файл скачается автоматически.</p>
+            <p><strong>4. Экспорт:</strong> Кнопки «Экспорт Excel» и «Экспорт PNG» позволяют сохранить таблицу в нужном формате. Для PNG используется библиотека html2canvas (загружается с CDN).</p>
             <p><strong>5. Импорт:</strong> Нажмите «Импорт» и выберите ранее сохранённый файл (TSV или Excel .xls) — таблица восстановится.</p>
             <p><strong>6. Очистка:</strong> Кнопка «Очистить всё» удаляет всех боссов и очищает локальное хранилище. Также можно удалить выбранных боссов через чекбоксы и кнопку «Удалить выбранных».</p>
             <p style="margin-top:8px; color:var(--text-muted); font-size:13px;">ℹ️ Все числа отображаются с разделителями тысяч для удобства чтения.</p>
@@ -1069,7 +1067,7 @@
                     '12': { dmg: null, max: 0 }
                 }
             },
-            // Новые боссы без допок (не будут показаны в выпадающем списке)
+            // Боссы без допок (не будут в выпадающем списке)
             'Мазай': {
                 hp: 25000000,
                 modes: {
@@ -1088,6 +1086,32 @@
             },
             'Чебот': {
                 hp: 75000000,
+                modes: {
+                    '1': { dmg: null, max: 0 },
+                    '3': { dmg: null, max: 0 },
+                    '6': { dmg: null, max: 0 }
+                }
+            },
+            // Новые боссы (пока без допок)
+            'Старшой': {
+                hp: 600000000,
+                modes: {
+                    '1': { dmg: null, max: 0 },
+                    '3': { dmg: null, max: 0 },
+                    '6': { dmg: null, max: 0 },
+                    '12': { dmg: null, max: 0 }
+                }
+            },
+            'Дантист': {
+                hp: 100000000,
+                modes: {
+                    '1': { dmg: null, max: 0 },
+                    '3': { dmg: null, max: 0 },
+                    '6': { dmg: null, max: 0 }
+                }
+            },
+            'Контрабас': {
+                hp: 200000000,
                 modes: {
                     '1': { dmg: null, max: 0 },
                     '3': { dmg: null, max: 0 },
@@ -1115,12 +1139,12 @@
         const totalWinTatu = container.querySelector('#totalWinTatu');
         const totalAllTatu = container.querySelector('#totalAllTatu');
         const totalHp = container.querySelector('#totalHp');
-        const exportBtn = container.querySelector('#exportBtn');
+        const exportBtnExcel = document.getElementById('exportBtnExcel');
+        const exportBtnPng = document.getElementById('exportBtnPng');
         const importBtn = container.querySelector('#importBtn');
         const clearBtn = container.querySelector('#clearBtn');
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
         const fileInput = container.querySelector('#fileInput');
-        const exportFormat = container.querySelector('#exportFormat');
         const statBosses = container.querySelector('#statBosses');
         const statTotalHp = container.querySelector('#statTotalHp');
         const statTotalDmg = container.querySelector('#statTotalDmg');
@@ -1653,33 +1677,58 @@
             return html;
         }
 
-        function exportData() {
-            const format = exportFormat.value;
-            let content, filename, mime;
-            if (format === 'tsv') {
-                content = exportTSV();
-                if (!content) return;
-                filename = 'boss_calculator_data.tsv';
-                mime = 'text/tab-separated-values;charset=utf-8';
-            } else {
-                content = exportXLS();
-                if (!content) return;
-                filename = 'boss_calculator_data.xls';
-                mime = 'application/vnd.ms-excel;charset=utf-8';
+        // === ФУНКЦИЯ ДЛЯ ЭКСПОРТА PNG ===
+        function exportPNG() {
+            const wrap = document.getElementById('tableWrap');
+            if (!wrap) {
+                showToast('⚠️ Не найдена таблица для скриншота');
+                return;
             }
-            const blob = new Blob([content], { type: mime });
+            showToast('⏳ Генерация изображения...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+            script.onload = function() {
+                html2canvas(wrap, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: window.getComputedStyle(wrap).backgroundColor || '#ffffff'
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'boss_table.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    showToast('✅ PNG сохранён');
+                }).catch(err => {
+                    console.error(err);
+                    showToast('⚠️ Ошибка при создании PNG');
+                });
+            };
+            script.onerror = function() {
+                showToast('⚠️ Не удалось загрузить библиотеку html2canvas');
+            };
+            document.head.appendChild(script);
+        }
+
+        // Обработчики для кнопок экспорта
+        exportBtnExcel.addEventListener('click', function() {
+            const content = exportXLS();
+            if (!content) return;
+            const blob = new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = 'boss_calculator_data.xls';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast(`📄 Экспорт в ${format.toUpperCase()} выполнен`);
-        }
-        exportBtn.addEventListener('click', exportData);
+            showToast('📄 Экспорт Excel выполнен');
+        });
 
+        exportBtnPng.addEventListener('click', exportPNG);
+
+        // Импорт
         function importFromFile(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1790,7 +1839,7 @@
         'use strict';
 
         const bosses = [
-            // Беспредельщики (21)
+            // Беспредельщики (без Дантиста)
             { name: "Кирпич",    category: "Беспредельщики", hp: 1000,      modes: ["Пацанский"] },
             { name: "Сизый",     category: "Беспредельщики", hp: 10000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Махно",     category: "Беспредельщики", hp: 50000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
@@ -1804,17 +1853,18 @@
             { name: "Гризли",    category: "Беспредельщики", hp: 10000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Феня",      category: "Беспредельщики", hp: 15000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Север",     category: "Беспредельщики", hp: 20000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Мазай",     category: "Беспредельщики", hp: 25000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Хирург",    category: "Беспредельщики", hp: 30000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Пресс",     category: "Беспредельщики", hp: 70000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Немой",     category: "Беспредельщики", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            // Дантист УБРАН из Беспредельщиков
             { name: "Бидон",     category: "Беспредельщики", hp: 300000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Воркута",   category: "Беспредельщики", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Старшой",   category: "Беспредельщики", hp: 600000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Бугор",     category: "Беспредельщики", hp: 1000000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Змей",      category: "Беспредельщики", hp: 13000000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Гвоздь",    category: "Беспредельщики", hp: 25000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            // Новый беспредельщик
-            { name: "Мазай",     category: "Беспредельщики", hp: 25000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            // Надзиратели (16)
+            // Надзиратели
             { name: "Палыч",     category: "Надзиратели", hp: 100000,    modes: ["Пацанский"] },
             { name: "Циклоп",    category: "Надзиратели", hp: 300000,    modes: ["Пацанский"] },
             { name: "Раиса",     category: "Надзиратели", hp: 300000,    modes: ["Пацанский"] },
@@ -1823,25 +1873,25 @@
             { name: "Близнецы",  category: "Надзиратели", hp: 2000000,   modes: ["Пацанский"] },
             { name: "Борзов",    category: "Надзиратели", hp: 3000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Цербер",    category: "Надзиратели", hp: 5000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Ёхан",      category: "Надзиратели", hp: 7000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Конвой",    category: "Надзиратели", hp: 10000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Бульдозер", category: "Надзиратели", hp: 15000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Кусто",     category: "Надзиратели", hp: 20000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Фин",       category: "Надзиратели", hp: 30000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Дюбель",    category: "Надзиратели", hp: 40000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Дантист",   category: "Надзиратели", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Чугун",     category: "Надзиратели", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Кнут",      category: "Надзиратели", hp: 500000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Крест",     category: "Надзиратели", hp: 5000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            // Новый надзиратель
-            { name: "Ёхан",      category: "Надзиратели", hp: 7000000,   modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            // Рецидивисты (6) — без Воровского
+            // Рецидивисты
             { name: "Жестянщики", category: "Рецидивисты", hp: 1000000,   modes: ["Пацанский"] },
             { name: "Отбой",      category: "Рецидивисты", hp: 5000000,   modes: ["Пацанский"] },
             { name: "Боцман",     category: "Рецидивисты", hp: 10000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Жульбаны",   category: "Рецидивисты", hp: 50000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Чебот",      category: "Рецидивисты", hp: 75000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Шнифер",     category: "Рецидивисты", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Бивень",     category: "Рецидивисты", hp: 150000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            // Новый рецидивист
-            { name: "Чебот",      category: "Рецидивисты", hp: 75000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] }
+            { name: "Контрабас",  category: "Рецидивисты", hp: 200000000, modes: ["Пацанский", "Блатной", "Авторитетный"] }
         ];
 
         function formatNumber(num) {

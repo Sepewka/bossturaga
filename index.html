@@ -608,16 +608,106 @@
             font-size: 0.92em;
             letter-spacing: -0.3px;
             padding-right: 3px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        /* Базовая тепловая карта HP — работает для ВСЕХ ячеек, вне зависимости от допок */
+        #tab-bosslist .hp-cell.hp-low   { background: var(--hp-low-bg); }
+        #tab-bosslist .hp-cell.hp-mid   { background: var(--hp-mid-bg); }
+        #tab-bosslist .hp-cell.hp-high  { background: var(--hp-high-bg); }
+        #tab-bosslist .hp-cell.hp-vhigh { background: var(--hp-vhigh-bg); }
+
+        /* Ячейки с допками — яркая подсветка с белой обводкой (перекрывает базовую по специфичности) */
+        #tab-bosslist .hp-cell.has-dop {
+            cursor: pointer;
+            background: rgba(52, 211, 153, 0.25) !important;
+            position: relative;
+            border-radius: 2px;
+            outline: 1px solid rgba(255, 255, 255, 0.8);
+            outline-offset: -1px;
+            font-weight: 600;
+            transition: background 0.2s, box-shadow 0.2s, outline 0.2s;
+        }
+        #tab-bosslist .hp-cell.has-dop:hover {
+            background: var(--accent-glow) !important;
+            box-shadow: 0 0 0 3px var(--accent), inset 0 0 20px rgba(99, 102, 241, 0.15);
+            outline: 2px solid var(--accent);
+            z-index: 2;
         }
         #tab-bosslist .hp-cell.empty {
             background: transparent !important;
             color: var(--text-muted);
             opacity: 0.35;
+            cursor: default;
         }
-        #tab-bosslist .hp-low   { color: var(--hp-low-color);  background: var(--hp-low-bg); }
-        #tab-bosslist .hp-mid   { color: var(--hp-mid-color);  background: var(--hp-mid-bg); }
-        #tab-bosslist .hp-high  { color: var(--hp-high-color); background: var(--hp-high-bg); }
-        #tab-bosslist .hp-vhigh { color: var(--hp-vhigh-color); background: var(--hp-vhigh-bg); }
+        /* Переопределяем цвета HP для ячеек с допками (сохраняем оттенки) */
+        #tab-bosslist .hp-cell.has-dop.hp-low   { background: rgba(5, 150, 105, 0.25) !important; }
+        #tab-bosslist .hp-cell.has-dop.hp-mid   { background: rgba(217, 119, 6, 0.25) !important; }
+        #tab-bosslist .hp-cell.has-dop.hp-high  { background: rgba(234, 88, 12, 0.25) !important; }
+        #tab-bosslist .hp-cell.has-dop.hp-vhigh { background: rgba(220, 38, 38, 0.25) !important; }
+
+        /* ===== Tooltip ===== */
+        .boss-tooltip {
+            position: fixed;
+            background: var(--glass-bg-strong);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-input);
+            box-shadow: var(--shadow-hover);
+            padding: 10px 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            max-width: 280px;
+            z-index: 9999;
+            pointer-events: none;
+            transition: opacity 0.15s;
+            opacity: 0;
+        }
+        .boss-tooltip.visible {
+            opacity: 1;
+        }
+        .boss-tooltip .tt-title {
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .boss-tooltip .tt-mode {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .boss-tooltip .tt-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .boss-tooltip .tt-dop-list {
+            margin: 4px 0 2px 0;
+            font-size: 12px;
+        }
+        .boss-tooltip .tt-dop-list .dop-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1px 0;
+        }
+        .boss-tooltip .tt-dop-list .dop-item .dop-label {
+            color: var(--text-secondary);
+        }
+        .boss-tooltip .tt-dop-list .dop-item .dop-value {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .boss-tooltip .tt-max {
+            margin-top: 4px;
+            font-weight: 600;
+            color: var(--text-link);
+            border-top: 1px solid var(--border-color);
+            padding-top: 4px;
+        }
+        .boss-tooltip .tt-hint {
+            font-size: 11px;
+            margin-top: 4px;
+            color: var(--text-link);
+            font-weight: 500;
+        }
 
         #tab-bosslist .cat-besprel { border-top: 3px solid var(--cat-blue); }
         #tab-bosslist .cat-besprel .table-header { color: var(--cat-blue); }
@@ -925,6 +1015,9 @@
 <!-- Глобальный toast -->
 <div class="global-toast" id="globalToast"></div>
 
+<!-- Tooltip -->
+<div class="boss-tooltip" id="bossTooltip"></div>
+
 <!-- ===== СКРИПТЫ ===== -->
 <script>
     // ================================================================
@@ -1007,7 +1100,7 @@
     }
 
     // ================================================================
-    // 4. СКРИПТ КАЛЬКУЛЯТОРА (первый файл) — с обновлёнными допками
+    // 4. СКРИПТ КАЛЬКУЛЯТОРА (первый файл) — с обновлёнными допками для Контрабаса
     // ================================================================
     (function calculator() {
         'use strict';
@@ -1121,34 +1214,37 @@
                     '6': { dmg: null, max: 0 }
                 }
             },
-            // Новые боссы с допками
+            // Боссы с допками
             'Старшой': {
                 hp: 600000000,
                 modes: {
-                    '1': { dmg: 18000000, max: 2 }, // Пацанский добавлен
-                    '3': { dmg: null, max: 0 },     // Блатной нет
-                    '6': { dmg: 24000000, max: 3 }, // Авторитетный
-                    '12': { dmg: 52500000, max: 2 } // Воровской
+                    '1': { dmg: 18000000, max: 2 },
+                    '3': { dmg: null, max: 0 },
+                    '6': { dmg: 24000000, max: 3 },
+                    '12': { dmg: 52500000, max: 2 }
                 }
             },
             'Дантист': {
                 hp: 100000000,
                 modes: {
-                    '1': { dmg: null, max: 0 }, // Пацанский нет
-                    '3': { dmg: 9000000, max: 2 }, // Блатной
-                    '6': { dmg: 12000000, max: 2 } // Авторитетный
-                    // Воровской отсутствует
+                    '1': { dmg: null, max: 0 },
+                    '3': { dmg: 9000000, max: 2 },
+                    '6': { dmg: 12000000, max: 2 }
                 }
             },
             'Контрабас': {
                 hp: 200000000,
                 modes: {
                     '1': { dmg: null, max: 0 },
-                    '3': { dmg: null, max: 0 },
+                    '3': { dmg: 24000000, max: 2 },
                     '6': { dmg: null, max: 0 }
                 }
             }
         };
+
+        // Делаем BOSSES доступным глобально для tooltip
+        window._BOSSES = BOSSES;
+        window._MODES = MODES;
 
         const container = document.getElementById('tab-calculator');
         const bossSelect = container.querySelector('#bossSelect');
@@ -1224,6 +1320,27 @@
 
         function getTotalHp(boss) {
             return getHpPerAttack(boss) * boss.attackLimit;
+        }
+
+        // Единый расчёт показателей урона/тату для одного босса.
+        // Используется в updateStats(), renderTable(), exportTSV() и exportXLS(),
+        // чтобы логика подсчёта (включая особый случай Змея реж.6) не расходилась.
+        function calcBossRow(boss) {
+            let dmgPerAttack, displayDmg;
+            if (isZmei6(boss)) {
+                dmgPerAttack = getZmeiThreshold(boss);
+                const thresholds = BOSSES['Змей'].modes['6'].thresholds;
+                const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
+                displayDmg = thresholds[idx] || 0;
+            } else {
+                dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
+                displayDmg = boss.dmgPerTatu;
+            }
+            const totalDmg = dmgPerAttack * boss.attackLimit;
+            const extraTatu = boss.tatuPerAttack * boss.attackLimit;
+            const winTatu = boss.attackLimit;
+            const allTatu = extraTatu + winTatu;
+            return { dmgPerAttack, displayDmg, totalDmg, extraTatu, winTatu, allTatu };
         }
 
         function isModeLabel(text) {
@@ -1500,19 +1617,10 @@
             let sumDmg = 0, sumExtra = 0, sumAll = 0;
             let sumHp = 0;
             bosses.forEach(boss => {
-                let dmgPerAttack;
-                if (isZmei6(boss)) {
-                    dmgPerAttack = getZmeiThreshold(boss);
-                } else {
-                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                }
-                const totalDmg = dmgPerAttack * boss.attackLimit;
-                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-                const winTatu = boss.attackLimit;
-                const allTatu = extraTatu + winTatu;
-                sumDmg += totalDmg;
-                sumExtra += extraTatu;
-                sumAll += allTatu;
+                const row = calcBossRow(boss);
+                sumDmg += row.totalDmg;
+                sumExtra += row.extraTatu;
+                sumAll += row.allTatu;
                 sumHp += getTotalHp(boss);
             });
             statTotalHp.textContent = fmt(sumHp);
@@ -1539,24 +1647,7 @@
 
             let html = '';
             bosses.forEach((boss, index) => {
-                let dmgPerAttack;
-                let displayDmg;
-                const isZmei = isZmei6(boss);
-
-                if (isZmei) {
-                    dmgPerAttack = getZmeiThreshold(boss);
-                    const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                    const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-                    displayDmg = thresholds[idx] || 0;
-                } else {
-                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                    displayDmg = boss.dmgPerTatu;
-                }
-
-                const totalDmg = dmgPerAttack * boss.attackLimit;
-                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-                const winTatu = boss.attackLimit;
-                const allTatu = extraTatu + winTatu;
+                const { dmgPerAttack, displayDmg, totalDmg, extraTatu, winTatu, allTatu } = calcBossRow(boss);
 
                 html += `<tr class="boss-row" data-index="${index}">`;
                 html += `<td><input type="checkbox" class="row-checkbox" data-id="${boss.id}"></td>`;
@@ -1621,35 +1712,10 @@
             if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
             let header = ['Босс','Режим','HP','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
             let rows = [];
-            bosses.forEach(boss => {
-                let dmgPerAttack, displayDmg;
-                if (isZmei6(boss)) {
-                    dmgPerAttack = getZmeiThreshold(boss);
-                    const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                    const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-                    displayDmg = thresholds[idx] || 0;
-                } else {
-                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                    displayDmg = boss.dmgPerTatu;
-                }
-                const totalDmg = dmgPerAttack * boss.attackLimit;
-                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-                const winTatu = boss.attackLimit;
-                const allTatu = extraTatu + winTatu;
-                rows.push([boss.name, getModeLabel(boss.mode), getHpPerAttack(boss), getTotalHp(boss), displayDmg, boss.tatuPerAttack, boss.attackLimit, dmgPerAttack, totalDmg, extraTatu, winTatu, allTatu]);
-            });
             let sumHp=0,sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
             bosses.forEach(boss => {
-                let dmgPerAttack;
-                if (isZmei6(boss)) {
-                    dmgPerAttack = getZmeiThreshold(boss);
-                } else {
-                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                }
-                const totalDmg = dmgPerAttack * boss.attackLimit;
-                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-                const winTatu = boss.attackLimit;
-                const allTatu = extraTatu + winTatu;
+                const { dmgPerAttack, displayDmg, totalDmg, extraTatu, winTatu, allTatu } = calcBossRow(boss);
+                rows.push([boss.name, getModeLabel(boss.mode), getHpPerAttack(boss), getTotalHp(boss), displayDmg, boss.tatuPerAttack, boss.attackLimit, dmgPerAttack, totalDmg, extraTatu, winTatu, allTatu]);
                 sumHp += getTotalHp(boss);
                 sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
             });
@@ -1666,35 +1732,10 @@
             html += '<table><thead><tr>';
             headers.forEach(h => html += `<th>${h}</th>`);
             html += '</tr></thead><tbody>';
-            bosses.forEach(boss => {
-                let dmgPerAttack, displayDmg;
-                if (isZmei6(boss)) {
-                    dmgPerAttack = getZmeiThreshold(boss);
-                    const thresholds = BOSSES['Змей'].modes['6'].thresholds;
-                    const idx = Math.min(boss.tatuPerAttack, thresholds.length - 1);
-                    displayDmg = thresholds[idx] || 0;
-                } else {
-                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                    displayDmg = boss.dmgPerTatu;
-                }
-                const totalDmg = dmgPerAttack * boss.attackLimit;
-                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-                const winTatu = boss.attackLimit;
-                const allTatu = extraTatu + winTatu;
-                html += `<tr><td>${boss.name}</td><td>${getModeLabel(boss.mode)}</td><td>${fmt(getHpPerAttack(boss))}</td><td>${fmt(getTotalHp(boss))}</td><td>${fmt(displayDmg)}</td><td>${boss.tatuPerAttack}</td><td>${boss.attackLimit}</td><td>${fmt(dmgPerAttack)}</td><td>${fmt(totalDmg)}</td><td>${fmt(extraTatu)}</td><td>${fmt(winTatu)}</td><td>${fmt(allTatu)}</td></tr>`;
-            });
             let sumHp=0,sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
             bosses.forEach(boss => {
-                let dmgPerAttack;
-                if (isZmei6(boss)) {
-                    dmgPerAttack = getZmeiThreshold(boss);
-                } else {
-                    dmgPerAttack = boss.dmgPerTatu * boss.tatuPerAttack;
-                }
-                const totalDmg = dmgPerAttack * boss.attackLimit;
-                const extraTatu = boss.tatuPerAttack * boss.attackLimit;
-                const winTatu = boss.attackLimit;
-                const allTatu = extraTatu + winTatu;
+                const { dmgPerAttack, displayDmg, totalDmg, extraTatu, winTatu, allTatu } = calcBossRow(boss);
+                html += `<tr><td>${boss.name}</td><td>${getModeLabel(boss.mode)}</td><td>${fmt(getHpPerAttack(boss))}</td><td>${fmt(getTotalHp(boss))}</td><td>${fmt(displayDmg)}</td><td>${boss.tatuPerAttack}</td><td>${boss.attackLimit}</td><td>${fmt(dmgPerAttack)}</td><td>${fmt(totalDmg)}</td><td>${fmt(extraTatu)}</td><td>${fmt(winTatu)}</td><td>${fmt(allTatu)}</td></tr>`;
                 sumHp += getTotalHp(boss);
                 sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
             });
@@ -1853,17 +1894,61 @@
             updateStats();
         }
         initCalculator();
+
+        // ================================================================
+        // ФУНКЦИЯ ДЛЯ ЗАПОЛНЕНИЯ ФОРМЫ ИЗ ТАБЛИЦЫ БОССОВ
+        // ================================================================
+        window.fillCalculatorFromBoss = function(bossName, modeKey) {
+            // Переключаемся на вкладку "Калькулятор"
+            const calcTab = document.querySelector('.tab-btn[data-tab="calculator"]');
+            if (calcTab) calcTab.click();
+
+            // Устанавливаем босса
+            const bossSelect = document.querySelector('#bossSelect');
+            if (bossSelect) {
+                bossSelect.value = bossName;
+                bossSelect.dispatchEvent(new Event('change'));
+            }
+
+            // После изменения босса, ждём обновления списка режимов, затем выбираем режим
+            setTimeout(() => {
+                const modeSelect = document.querySelector('#modeSelect');
+                if (modeSelect) {
+                    const option = Array.from(modeSelect.options).find(opt => opt.value === modeKey);
+                    if (option) {
+                        modeSelect.value = modeKey;
+                        modeSelect.dispatchEvent(new Event('change'));
+                    } else {
+                        showToast('⚠️ Режим не найден для этого босса');
+                    }
+                }
+            }, 100);
+
+            // После выбора режима, устанавливаем допки на максимум (если есть)
+            setTimeout(() => {
+                const tatuSelect = document.querySelector('#tatuSelect');
+                const maxTatu = parseInt(document.getElementById('displayMaxTatu').textContent) || 0;
+                if (tatuSelect && maxTatu > 0) {
+                    tatuSelect.value = maxTatu;
+                }
+            }, 200);
+
+            // Показываем сообщение с названием режима вместо ключа
+            const modeLabel = window._MODES && window._MODES[modeKey] ? window._MODES[modeKey].label : modeKey;
+            showToast(`✅ Заполнено: ${bossName} - ${modeLabel}`);
+        };
+
     })();
 
     // ================================================================
     // 5. СКРИПТ СПИСКА БОССОВ (второй файл) — с сортировкой по HP внутри категории
-    //     и кнопками экспорта: Excel и PNG
+    //     и кнопками экспорта: Excel и PNG, плюс tooltip и клик
     // ================================================================
     (function bossList() {
         'use strict';
 
         const bosses = [
-            // Беспредельщики (без Дантиста)
+            // Беспредельщики
             { name: "Кирпич",    category: "Беспредельщики", hp: 1000,      modes: ["Пацанский"] },
             { name: "Сизый",     category: "Беспредельщики", hp: 10000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Махно",     category: "Беспредельщики", hp: 50000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
@@ -1917,15 +2002,20 @@
             { name: "Контрабас",  category: "Рецидивисты", hp: 200000000, modes: ["Пацанский", "Блатной", "Авторитетный"] }
         ];
 
+        // Достаём данные о допках из глобального BOSSES
+        const BOSSES = window._BOSSES || {};
+        const MODES = window._MODES || {};
+
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
         }
 
+        // Новая тепловая карта
         function getHpClass(hp) {
-            if (hp <= 300000) return 'hp-low';
-            if (hp <= 2000000) return 'hp-mid';
-            if (hp <= 100000000) return 'hp-high';
-            return 'hp-vhigh';
+            if (hp <= 5000000) return 'hp-low';      // зелёный
+            if (hp <= 600000000) return 'hp-mid';    // жёлтый
+            if (hp <= 5000000000) return 'hp-high';  // оранжевый
+            return 'hp-vhigh';                       // красный
         }
 
         const modeMultipliers = {
@@ -1933,6 +2023,14 @@
             'Блатной': 3,
             'Авторитетный': 6,
             'Воровской': 12
+        };
+
+        // Маппинг названия режима на его ключ (используется в BOSSES)
+        const modeKeyMap = {
+            'Пацанский': '1',
+            'Блатной': '3',
+            'Авторитетный': '6',
+            'Воровской': '12'
         };
 
         const columnsConfig = {
@@ -1990,14 +2088,46 @@
                 tdName.textContent = boss.name;
                 tr.appendChild(tdName);
 
+                // Для каждого режима в столбцах
                 for (let i = 1; i < columns.length; i++) {
-                    const mode = columns[i];
+                    const modeName = columns[i];
                     const td = document.createElement('td');
                     td.className = 'hp-cell';
-                    if (boss.modes.includes(mode)) {
-                        const hp = boss.hp * modeMultipliers[mode];
+
+                    if (boss.modes.includes(modeName)) {
+                        const hp = boss.hp * modeMultipliers[modeName];
                         td.textContent = formatNumber(hp);
                         td.classList.add(getHpClass(hp));
+
+                        // Проверяем, есть ли доп. награды для этого босса и режима
+                        const modeKey = modeKeyMap[modeName];
+                        const bossData = BOSSES[boss.name];
+                        let hasDop = false;
+                        let dmg = null;
+                        let max = 0;
+                        let thresholds = null;
+                        if (bossData && bossData.modes && bossData.modes[modeKey]) {
+                            const modeData = bossData.modes[modeKey];
+                            if (modeData.dmg !== null && modeData.max > 0) {
+                                hasDop = true;
+                                dmg = modeData.dmg;
+                                max = modeData.max;
+                                thresholds = modeData.thresholds || null;
+                            }
+                        }
+
+                        if (hasDop) {
+                            td.classList.add('has-dop');
+                            td.dataset.boss = boss.name;
+                            td.dataset.mode = modeKey;
+                            td.dataset.hp = hp;
+                            td.dataset.dmg = dmg;
+                            td.dataset.max = max;
+                            if (thresholds) {
+                                td.dataset.thresholds = JSON.stringify(thresholds);
+                            }
+                            td.title = 'Кликните для быстрого заполнения калькулятора';
+                        }
                     } else {
                         td.classList.add('empty');
                         td.textContent = '';
@@ -2017,6 +2147,110 @@
             if (list.length === 0) return;
             const tableEl = buildTable(cat, list);
             tablesContainer.appendChild(tableEl);
+        });
+
+        // ================================================================
+        // ОБРАБОТЧИКИ TOOLTIP И КЛИКА
+        // ================================================================
+        const tooltip = document.getElementById('bossTooltip');
+        let tooltipTimeout = null;
+
+        function showTooltip(e, bossName, modeKey, dmg, max, thresholds) {
+            const modeLabel = MODES[modeKey] ? MODES[modeKey].label : modeKey;
+            let dopListHtml = '';
+            let maxTotal = 0;
+
+            if (thresholds && thresholds.length > 1) {
+                // Пороговый режим (Змей)
+                const list = [];
+                for (let i = 1; i < thresholds.length; i++) {
+                    const prev = thresholds[i-1];
+                    const cur = thresholds[i];
+                    const dopDmg = cur - prev;
+                    list.push({ num: i, dmg: dopDmg, total: cur });
+                }
+                maxTotal = thresholds[thresholds.length - 1];
+                dopListHtml = list.map(item =>
+                    `<div class="dop-item"><span class="dop-label">${item.num}-я допка:</span><span class="dop-value">${formatNumber(item.total)}</span></div>`
+                ).join('');
+            } else if (dmg && max > 0) {
+                // Обычный режим с одинаковым уроном за каждую допку
+                const list = [];
+                for (let i = 1; i <= max; i++) {
+                    list.push({ num: i, total: dmg * i });
+                }
+                maxTotal = dmg * max;
+                dopListHtml = list.map(item =>
+                    `<div class="dop-item"><span class="dop-label">${item.num}-я допка:</span><span class="dop-value">${formatNumber(item.total)}</span></div>`
+                ).join('');
+            } else {
+                dopListHtml = '<div class="dop-item">Нет данных о допках</div>';
+                maxTotal = 0;
+            }
+
+            tooltip.innerHTML = `
+                <div class="tt-title">${bossName}</div>
+                <div class="tt-mode">${modeLabel}</div>
+                <div class="tt-dop-list">${dopListHtml}</div>
+                ${maxTotal > 0 ? `<div class="tt-max">Максимальный урон: ${formatNumber(maxTotal)}</div>` : ''}
+                <div class="tt-hint">🖱 Кликните, чтобы заполнить калькулятор</div>
+            `;
+            // Позиционируем
+            const rect = e.target.getBoundingClientRect();
+            let left = rect.left + rect.width / 2 - 140;
+            let top = rect.bottom + 8;
+            if (left < 10) left = 10;
+            if (left + 280 > window.innerWidth) left = window.innerWidth - 290;
+            if (top + 160 > window.innerHeight) top = rect.top - 160;
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+        }
+
+        // Делегирование на таблицах внутри #tab-bosslist
+        const bosslistContainer = document.getElementById('tab-bosslist');
+        bosslistContainer.addEventListener('mouseover', function(e) {
+            const cell = e.target.closest('.hp-cell.has-dop');
+            if (cell) {
+                const boss = cell.dataset.boss;
+                const mode = cell.dataset.mode;
+                const dmg = parseInt(cell.dataset.dmg);
+                const max = parseInt(cell.dataset.max);
+                let thresholds = null;
+                if (cell.dataset.thresholds) {
+                    try { thresholds = JSON.parse(cell.dataset.thresholds); } catch(e) {}
+                }
+                if (boss && mode && !isNaN(dmg) && !isNaN(max)) {
+                    showTooltip(e, boss, mode, dmg, max, thresholds);
+                }
+            } else {
+                hideTooltip();
+            }
+        });
+
+        bosslistContainer.addEventListener('mouseout', function(e) {
+            const related = e.relatedTarget;
+            if (!related || !related.closest('.hp-cell.has-dop')) {
+                hideTooltip();
+            }
+        });
+
+        // Клик по ячейке с допками
+        bosslistContainer.addEventListener('click', function(e) {
+            const cell = e.target.closest('.hp-cell.has-dop');
+            if (cell) {
+                const boss = cell.dataset.boss;
+                const mode = cell.dataset.mode;
+                if (boss && mode && typeof window.fillCalculatorFromBoss === 'function') {
+                    window.fillCalculatorFromBoss(boss, mode);
+                } else {
+                    showToast('⚠️ Ошибка: функция не найдена');
+                }
+            }
         });
 
         // Экспорт Excel для списка боссов

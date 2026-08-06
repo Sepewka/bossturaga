@@ -259,7 +259,14 @@
         }
         #tab-calculator .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
         #tab-calculator .stat-card .stat-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-secondary); margin-bottom:4px; transition:color var(--transition); }
-        #tab-calculator .stat-card .stat-value { font-size:26px; font-weight:700; color:var(--text-primary); transition:color var(--transition); }
+        #tab-calculator .stat-card .stat-value {
+            font-size:26px;
+            font-weight:700;
+            color:var(--text-primary);
+            transition:color var(--transition);
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
         #tab-calculator .stat-card .stat-value .small { font-size:14px; font-weight:400; color:var(--text-secondary); margin-left:4px; }
         #tab-calculator .stat-card.accent .stat-value { color:var(--text-link); }
 
@@ -877,7 +884,7 @@
             .header-actions .btn-link { font-size: 13px; padding: 6px 10px; }
             #tab-calculator .stats-grid { grid-template-columns:1fr 1fr; gap:6px; }
             #tab-calculator .stat-card { padding:12px 10px; }
-            #tab-calculator .stat-card .stat-value { font-size:18px; }
+            #tab-calculator .stat-card .stat-value { font-size:16px; word-break: break-word; }
             #tab-calculator .stat-card .stat-label { font-size:10px; }
             #tab-calculator .form-info-grid { grid-template-columns:1fr 1fr; }
             #tab-calculator .form-info-item .info-value { font-size:15px; }

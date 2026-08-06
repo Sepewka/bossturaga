@@ -110,6 +110,10 @@
             --hp-mid-bg: rgba(251, 191, 36, 0.06);
             --hp-high-bg: rgba(251, 146, 60, 0.06);
             --hp-vhigh-bg: rgba(248, 113, 113, 0.06);
+            /* На тёмном фоне исходные --cat-* цвета (light-тема) теряют контраст — делаем их светлее */
+            --cat-blue: #60a5fa;
+            --cat-amber: #fbbf24;
+            --cat-violet: #c084fc;
         }
 
         body {
@@ -610,11 +614,12 @@
             padding-right: 3px;
             transition: background 0.2s, box-shadow 0.2s;
         }
-        /* Базовая тепловая карта HP — работает для ВСЕХ ячеек, вне зависимости от допок */
-        #tab-bosslist .hp-cell.hp-low   { background: var(--hp-low-bg); }
-        #tab-bosslist .hp-cell.hp-mid   { background: var(--hp-mid-bg); }
-        #tab-bosslist .hp-cell.hp-high  { background: var(--hp-high-bg); }
-        #tab-bosslist .hp-cell.hp-vhigh { background: var(--hp-vhigh-bg); }
+        /* Базовая тепловая карта HP — работает для ВСЕХ ячеек, вне зависимости от допок.
+           Цвет текста соответствует цвету подсветки, чтобы цифры и легенда читались как единая система. */
+        #tab-bosslist .hp-cell.hp-low   { background: var(--hp-low-bg);   color: var(--hp-low-color); }
+        #tab-bosslist .hp-cell.hp-mid   { background: var(--hp-mid-bg);   color: var(--hp-mid-color); }
+        #tab-bosslist .hp-cell.hp-high  { background: var(--hp-high-bg);  color: var(--hp-high-color); }
+        #tab-bosslist .hp-cell.hp-vhigh { background: var(--hp-vhigh-bg); color: var(--hp-vhigh-color); font-weight: 700; }
 
         /* Ячейки с допками — яркая подсветка с белой обводкой (перекрывает базовую по специфичности) */
         #tab-bosslist .hp-cell.has-dop {
@@ -644,6 +649,39 @@
         #tab-bosslist .hp-cell.has-dop.hp-mid   { background: rgba(217, 119, 6, 0.25) !important; }
         #tab-bosslist .hp-cell.has-dop.hp-high  { background: rgba(234, 88, 12, 0.25) !important; }
         #tab-bosslist .hp-cell.has-dop.hp-vhigh { background: rgba(220, 38, 38, 0.25) !important; }
+
+        /* Легенда тепловой карты — цвет иконки соответствует цвету ячеек с таким же HP */
+        .hp-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            align-items: center;
+            margin: 2px 0 14px;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-input);
+            font-size: 12.5px;
+            color: var(--text-secondary);
+        }
+        .hp-legend-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .hp-legend-item i {
+            width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+            display: inline-block;
+        }
+        .hp-legend-item i.hp-low   { background: var(--hp-low-bg);   box-shadow: inset 0 0 0 1px var(--hp-low-color); }
+        .hp-legend-item i.hp-mid   { background: var(--hp-mid-bg);   box-shadow: inset 0 0 0 1px var(--hp-mid-color); }
+        .hp-legend-item i.hp-high  { background: var(--hp-high-bg);  box-shadow: inset 0 0 0 1px var(--hp-high-color); }
+        .hp-legend-item i.hp-vhigh { background: var(--hp-vhigh-bg); box-shadow: inset 0 0 0 1px var(--hp-vhigh-color); }
+        .hp-legend-item i.has-dop {
+            background: rgba(52, 211, 153, 0.25);
+            outline: 1px solid rgba(255,255,255,0.8);
+            outline-offset: -1px;
+        }
+        .hp-legend-dop { color: var(--text-primary); font-weight: 500; }
+        @media (max-width: 480px) {
+            .hp-legend { font-size: 11.5px; padding: 8px 10px; gap: 5px 10px; }
+        }
 
         /* ===== Tooltip ===== */
         .boss-tooltip {
@@ -1005,6 +1043,13 @@
             <button class="btn-export-png2" id="exportBtnPng2">🖼 Экспорт PNG</button>
         </div>
         <p class="scroll-hint">← Листайте таблицы влево-вправо →</p>
+        <div class="hp-legend">
+            <span class="hp-legend-item"><i class="hp-low"></i>Низкий HP</span>
+            <span class="hp-legend-item"><i class="hp-mid"></i>Средний HP</span>
+            <span class="hp-legend-item"><i class="hp-high"></i>Высокий HP</span>
+            <span class="hp-legend-item"><i class="hp-vhigh"></i>Очень высокий HP</span>
+            <span class="hp-legend-item hp-legend-dop"><i class="has-dop"></i>Есть допки — нажмите на ячейку</span>
+        </div>
         <div class="tables-grid" id="tablesContainer2">
             <p style="padding: 20px; text-align: center; width: 100%;">Загрузка...</p>
         </div>
@@ -1725,9 +1770,19 @@
             return tsv;
         }
 
+        // Числовая ячейка для экспорта: Excel получает настоящее число (можно суммировать,
+        // сортировать, использовать в формулах), а mso-number-format задаёт вид "1 234 567".
+        function xlsNum(n) {
+            const val = Math.round(n) || 0;
+            return `<td style="mso-number-format:'#,##0';text-align:right;">${val}</td>`;
+        }
+        function xlsText(s) {
+            return `<td>${s}</td>`;
+        }
+
         function exportXLS() {
             if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
-            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}</style></head><body>`;
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}.total td{color:#ffffff;}</style></head><body>`;
             const headers = ['Босс','Режим','HP','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
             html += '<table><thead><tr>';
             headers.forEach(h => html += `<th>${h}</th>`);
@@ -1735,11 +1790,11 @@
             let sumHp=0,sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
             bosses.forEach(boss => {
                 const { dmgPerAttack, displayDmg, totalDmg, extraTatu, winTatu, allTatu } = calcBossRow(boss);
-                html += `<tr><td>${boss.name}</td><td>${getModeLabel(boss.mode)}</td><td>${fmt(getHpPerAttack(boss))}</td><td>${fmt(getTotalHp(boss))}</td><td>${fmt(displayDmg)}</td><td>${boss.tatuPerAttack}</td><td>${boss.attackLimit}</td><td>${fmt(dmgPerAttack)}</td><td>${fmt(totalDmg)}</td><td>${fmt(extraTatu)}</td><td>${fmt(winTatu)}</td><td>${fmt(allTatu)}</td></tr>`;
+                html += `<tr>${xlsText(boss.name)}${xlsText(getModeLabel(boss.mode))}${xlsNum(getHpPerAttack(boss))}${xlsNum(getTotalHp(boss))}${xlsNum(displayDmg)}${xlsNum(boss.tatuPerAttack)}${xlsNum(boss.attackLimit)}${xlsNum(dmgPerAttack)}${xlsNum(totalDmg)}${xlsNum(extraTatu)}${xlsNum(winTatu)}${xlsNum(allTatu)}</tr>`;
                 sumHp += getTotalHp(boss);
                 sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
             });
-            html += `<tr class="total"><td colspan="2">ИТОГО</td><td></td><td>${fmt(sumHp)}</td><td colspan="4"></td><td>${fmt(sumDmg)}</td><td>${fmt(sumExtra)}</td><td>${fmt(sumWin)}</td><td>${fmt(sumAll)}</td></tr>`;
+            html += `<tr class="total"><td colspan="2">ИТОГО</td><td></td>${xlsNum(sumHp)}<td colspan="4"></td>${xlsNum(sumDmg)}${xlsNum(sumExtra)}${xlsNum(sumWin)}${xlsNum(sumAll)}</tr>`;
             html += '</tbody></table></body></html>';
             return html;
         }
@@ -2154,8 +2209,12 @@
         // ================================================================
         const tooltip = document.getElementById('bossTooltip');
         let tooltipTimeout = null;
+        // На тач-устройствах нет hover — награду сначала показываем по тапу,
+        // и только повторный тап по той же ячейке переносит боссов в калькулятор.
+        const isTouchDevice = window.matchMedia('(hover: none)').matches || navigator.maxTouchPoints > 0;
+        let touchActiveCell = null;
 
-        function showTooltip(e, bossName, modeKey, dmg, max, thresholds) {
+        function showTooltip(e, bossName, modeKey, dmg, max, thresholds, targetEl) {
             const modeLabel = MODES[modeKey] ? MODES[modeKey].label : modeKey;
             let dopListHtml = '';
             let maxTotal = 0;
@@ -2193,10 +2252,10 @@
                 <div class="tt-mode">${modeLabel}</div>
                 <div class="tt-dop-list">${dopListHtml}</div>
                 ${maxTotal > 0 ? `<div class="tt-max">Максимальный урон: ${formatNumber(maxTotal)}</div>` : ''}
-                <div class="tt-hint">🖱 Кликните, чтобы заполнить калькулятор</div>
+                <div class="tt-hint">${isTouchDevice ? '👆 Нажмите ещё раз, чтобы заполнить калькулятор' : '🖱 Кликните, чтобы заполнить калькулятор'}</div>
             `;
             // Позиционируем
-            const rect = e.target.getBoundingClientRect();
+            const rect = (targetEl || e.target).getBoundingClientRect();
             let left = rect.left + rect.width / 2 - 140;
             let top = rect.bottom + 8;
             if (left < 10) left = 10;
@@ -2211,21 +2270,29 @@
             tooltip.classList.remove('visible');
         }
 
+        function readCellReward(cell) {
+            const boss = cell.dataset.boss;
+            const mode = cell.dataset.mode;
+            const dmg = parseInt(cell.dataset.dmg);
+            const max = parseInt(cell.dataset.max);
+            let thresholds = null;
+            if (cell.dataset.thresholds) {
+                try { thresholds = JSON.parse(cell.dataset.thresholds); } catch(e) {}
+            }
+            return { boss, mode, dmg, max, thresholds };
+        }
+
         // Делегирование на таблицах внутри #tab-bosslist
         const bosslistContainer = document.getElementById('tab-bosslist');
+
+        // Наведение мышью (только для устройств с мышью — на тач-экранах это не используется)
         bosslistContainer.addEventListener('mouseover', function(e) {
+            if (isTouchDevice) return;
             const cell = e.target.closest('.hp-cell.has-dop');
             if (cell) {
-                const boss = cell.dataset.boss;
-                const mode = cell.dataset.mode;
-                const dmg = parseInt(cell.dataset.dmg);
-                const max = parseInt(cell.dataset.max);
-                let thresholds = null;
-                if (cell.dataset.thresholds) {
-                    try { thresholds = JSON.parse(cell.dataset.thresholds); } catch(e) {}
-                }
+                const { boss, mode, dmg, max, thresholds } = readCellReward(cell);
                 if (boss && mode && !isNaN(dmg) && !isNaN(max)) {
-                    showTooltip(e, boss, mode, dmg, max, thresholds);
+                    showTooltip(e, boss, mode, dmg, max, thresholds, cell);
                 }
             } else {
                 hideTooltip();
@@ -2233,23 +2300,51 @@
         });
 
         bosslistContainer.addEventListener('mouseout', function(e) {
+            if (isTouchDevice) return;
             const related = e.relatedTarget;
             if (!related || !related.closest('.hp-cell.has-dop')) {
                 hideTooltip();
             }
         });
 
-        // Клик по ячейке с допками
+        // Клик / тап по ячейке с допками
         bosslistContainer.addEventListener('click', function(e) {
             const cell = e.target.closest('.hp-cell.has-dop');
-            if (cell) {
-                const boss = cell.dataset.boss;
-                const mode = cell.dataset.mode;
-                if (boss && mode && typeof window.fillCalculatorFromBoss === 'function') {
-                    window.fillCalculatorFromBoss(boss, mode);
-                } else {
-                    showToast('⚠️ Ошибка: функция не найдена');
+
+            if (!cell) {
+                if (isTouchDevice) { hideTooltip(); touchActiveCell = null; }
+                return;
+            }
+
+            if (isTouchDevice) {
+                if (touchActiveCell !== cell) {
+                    // Первый тап — только показываем награду, в калькулятор не переносим
+                    const { boss, mode, dmg, max, thresholds } = readCellReward(cell);
+                    if (boss && mode && !isNaN(dmg) && !isNaN(max)) {
+                        showTooltip(e, boss, mode, dmg, max, thresholds, cell);
+                        touchActiveCell = cell;
+                    }
+                    return;
                 }
+                // Повторный тап по той же ячейке — переносим в калькулятор
+            }
+
+            const boss = cell.dataset.boss;
+            const mode = cell.dataset.mode;
+            if (boss && mode && typeof window.fillCalculatorFromBoss === 'function') {
+                window.fillCalculatorFromBoss(boss, mode);
+                hideTooltip();
+                touchActiveCell = null;
+            } else {
+                showToast('⚠️ Ошибка: функция не найдена');
+            }
+        });
+
+        // Тап вне ячейки с допками — закрываем открытую подсказку
+        document.addEventListener('click', function(e) {
+            if (isTouchDevice && touchActiveCell && !e.target.closest('.hp-cell.has-dop')) {
+                hideTooltip();
+                touchActiveCell = null;
             }
         });
 
@@ -2316,7 +2411,7 @@
                         if (boss.modes.includes(mode)) {
                             const hp = boss.hp * modeMultipliers[mode];
                             const cls = getHpClass(hp);
-                            html += `<td class="hp-cell ${cls}">${formatNumber(hp)}</td>`;
+                            html += `<td class="hp-cell ${cls}" style="mso-number-format:'#,##0';">${Math.round(hp)}</td>`;
                         } else {
                             html += `<td class="hp-cell empty"></td>`;
                         }

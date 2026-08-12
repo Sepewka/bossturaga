@@ -1,119 +1,128 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <meta name="description" content="Калькулятор урона по боссам Dopki.ru: считайте HP, урон и допки, ведите таблицу боссов и сверяйтесь со справочным списком.">
+    <meta property="og:title" content="Dopki.ru — Калькулятор урона по боссам">
+    <meta property="og:description" content="Считайте HP, урон и допки по боссам, ведите свою таблицу и сверяйтесь со справочным списком.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#121110">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23171310'/%3E%3Ctext x='50' y='68' font-size='60' font-family='Segoe UI, Arial, sans-serif' font-weight='700' text-anchor='middle' fill='%23c99a5f'%3ED%3C/text%3E%3C/svg%3E">
     <title>Боссы — Калькулятор + Список</title>
     <style>
         /* ===== ОБЩИЕ СТИЛИ (без изменений) ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg-gradient-1: #e8ecf4;
-            --bg-gradient-2: #f0f3fa;
-            --bg-gradient-3: #eae6f5;
-            --accent: #6366f1;
-            --accent-light: #818cf8;
-            --accent-glow: rgba(99, 102, 241, 0.18);
-            --glass-bg: rgba(255, 255, 255, 0.62);
-            --glass-bg-strong: rgba(255, 255, 255, 0.78);
-            --glass-border: rgba(255, 255, 255, 0.85);
-            --glass-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+            --bg-gradient-1: #ece4d6;
+            --bg-gradient-2: #f3ede1;
+            --bg-gradient-3: #e8dfcd;
+            --accent: #a8531d;
+            --accent-light: #c9722e;
+            --accent-glow: rgba(168, 83, 29, 0.16);
+            --glass-bg: rgba(255, 253, 248, 0.66);
+            --glass-bg-strong: rgba(255, 253, 248, 0.85);
+            --glass-border: rgba(120, 90, 60, 0.16);
+            --glass-shadow: 0 4px 24px rgba(40, 25, 10, 0.08);
             --glass-blur: 18px;
             --bg-card: var(--glass-bg);
-            --bg-card-hover: rgba(255, 255, 255, 0.88);
-            --bg-input: rgba(255, 255, 255, 0.82);
-            --bg-input-alt: rgba(248, 250, 252, 0.7);
+            --bg-card-hover: rgba(255, 253, 248, 0.92);
+            --bg-input: rgba(255, 253, 248, 0.85);
+            --bg-input-alt: rgba(240, 232, 218, 0.7);
             --bg-header: var(--glass-bg-strong);
-            --bg-table-header: rgba(248, 250, 252, 0.8);
-            --bg-table-row: rgba(255, 255, 255, 0.4);
-            --bg-table-row-alt: rgba(255, 255, 255, 0.55);
-            --bg-total: rgba(30, 41, 59, 0.92);
+            --bg-table-header: rgba(240, 232, 218, 0.8);
+            --bg-table-row: rgba(255, 253, 248, 0.4);
+            --bg-table-row-alt: rgba(255, 253, 248, 0.62);
+            --bg-total: rgba(43, 33, 24, 0.94);
             --bg-btn-primary: var(--accent);
-            --bg-btn-primary-hover: #4f46e5;
-            --bg-btn-secondary: rgba(255, 255, 255, 0.5);
-            --bg-btn-secondary-hover: rgba(255, 255, 255, 0.72);
-            --bg-btn-danger: rgba(254, 226, 226, 0.85);
-            --bg-btn-danger-hover: rgba(254, 202, 202, 0.9);
-            --bg-select: rgba(255, 255, 255, 0.82);
-            --bg-toast: rgba(30, 41, 59, 0.94);
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-inverse: #ffffff;
-            --text-muted: #94a3b8;
+            --bg-btn-primary-hover: #8a4116;
+            --bg-btn-secondary: rgba(120, 90, 60, 0.1);
+            --bg-btn-secondary-hover: rgba(120, 90, 60, 0.18);
+            --bg-btn-danger: rgba(168, 50, 31, 0.12);
+            --bg-btn-danger-hover: rgba(168, 50, 31, 0.2);
+            --bg-select: rgba(255, 253, 248, 0.85);
+            --bg-toast: rgba(43, 33, 24, 0.95);
+            --text-primary: #2b2118;
+            --text-secondary: #6b5c4a;
+            --text-inverse: #fdf8f0;
+            --text-muted: #9a8a72;
             --text-link: var(--accent);
-            --border-color: rgba(226, 232, 240, 0.8);
-            --border-input: rgba(203, 213, 225, 0.7);
+            --text-danger: #a8321f;
+            --border-color: rgba(120, 90, 60, 0.2);
+            --border-input: rgba(120, 90, 60, 0.28);
             --shadow-card: var(--glass-shadow);
-            --shadow-hover: 0 8px 32px rgba(15, 23, 42, 0.1);
-            --cat-blue: #3b82f6;
-            --cat-amber: #f59e0b;
-            --cat-violet: #8b5cf6;
-            --hp-low-color: #059669;
-            --hp-mid-color: #d97706;
-            --hp-high-color: #ea580c;
-            --hp-vhigh-color: #dc2626;
-            --hp-low-bg: rgba(5, 150, 105, 0.07);
-            --hp-mid-bg: rgba(217, 119, 6, 0.07);
-            --hp-high-bg: rgba(234, 88, 12, 0.07);
-            --hp-vhigh-bg: rgba(220, 38, 38, 0.07);
-            --radius-card: 18px;
-            --radius-input: 12px;
-            --radius-btn: 24px;
-            --radius-table: 14px;
+            --shadow-hover: 0 8px 32px rgba(40, 25, 10, 0.14);
+            --cat-blue: #2a231c;
+            --cat-amber: #b3261e;
+            --cat-violet: #96721a;
+            --hp-low-color: #4d7c22;
+            --hp-mid-color: #b9770e;
+            --hp-high-color: #c4551a;
+            --hp-vhigh-color: #a8321f;
+            --hp-low-bg: rgba(77, 124, 34, 0.08);
+            --hp-mid-bg: rgba(185, 119, 14, 0.08);
+            --hp-high-bg: rgba(196, 85, 26, 0.08);
+            --hp-vhigh-bg: rgba(168, 50, 31, 0.08);
+            --radius-card: 12px;
+            --radius-input: 8px;
+            --radius-btn: 10px;
+            --radius-table: 10px;
             --transition: 0.25s ease;
             --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, system-ui, sans-serif;
+            --font-display: Georgia, 'Iowan Old Style', 'Times New Roman', 'PT Serif', serif;
         }
         [data-theme="dark"] {
-            --bg-gradient-1: #0b0f17;
-            --bg-gradient-2: #111827;
-            --bg-gradient-3: #15102a;
-            --accent: #818cf8;
-            --accent-light: #a5b4fc;
-            --accent-glow: rgba(129, 140, 248, 0.15);
-            --glass-bg: rgba(22, 27, 38, 0.62);
-            --glass-bg-strong: rgba(28, 34, 48, 0.78);
-            --glass-border: rgba(255, 255, 255, 0.07);
-            --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+            --bg-gradient-1: #121110;
+            --bg-gradient-2: #17140f;
+            --bg-gradient-3: #191512;
+            --accent: #8f5e2c;
+            --accent-light: #c99a5f;
+            --accent-glow: rgba(143, 94, 44, 0.12);
+            --glass-bg: rgba(28, 25, 21, 0.66);
+            --glass-bg-strong: rgba(34, 30, 25, 0.84);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
             --glass-blur: 20px;
             --bg-card: var(--glass-bg);
-            --bg-card-hover: rgba(36, 42, 56, 0.75);
-            --bg-input: rgba(22, 27, 38, 0.85);
-            --bg-input-alt: rgba(30, 36, 50, 0.6);
+            --bg-card-hover: rgba(42, 37, 30, 0.8);
+            --bg-input: rgba(10, 8, 7, 0.9);
+            --bg-input-alt: rgba(10, 8, 7, 0.55);
             --bg-header: var(--glass-bg-strong);
-            --bg-table-header: rgba(30, 36, 50, 0.75);
-            --bg-table-row: rgba(22, 27, 38, 0.45);
-            --bg-table-row-alt: rgba(28, 34, 48, 0.55);
-            --bg-total: rgba(99, 102, 241, 0.88);
+            --bg-table-header: rgba(36, 31, 25, 0.78);
+            --bg-table-row: rgba(26, 22, 18, 0.45);
+            --bg-table-row-alt: rgba(34, 30, 24, 0.58);
+            --bg-total: rgba(26, 22, 18, 0.96);
             --bg-btn-primary: var(--accent);
-            --bg-btn-primary-hover: #6366f1;
+            --bg-btn-primary-hover: #a3703a;
             --bg-btn-secondary: rgba(255, 255, 255, 0.05);
             --bg-btn-secondary-hover: rgba(255, 255, 255, 0.1);
-            --bg-btn-danger: rgba(127, 29, 29, 0.45);
-            --bg-btn-danger-hover: rgba(153, 27, 27, 0.55);
-            --bg-select: rgba(22, 27, 38, 0.85);
-            --bg-toast: rgba(99, 102, 241, 0.94);
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --text-inverse: #ffffff;
-            --text-muted: #64748b;
+            --bg-btn-danger: rgba(140, 40, 25, 0.35);
+            --bg-btn-danger-hover: rgba(160, 48, 30, 0.48);
+            --bg-select: rgba(10, 8, 7, 0.9);
+            --bg-toast: rgba(30, 26, 21, 0.96);
+            --text-primary: #e6ddd0;
+            --text-secondary: #a6998a;
+            --text-inverse: #f2e8d8;
+            --text-muted: #6e6255;
             --text-link: var(--accent-light);
-            --border-color: rgba(255, 255, 255, 0.06);
-            --border-input: rgba(255, 255, 255, 0.1);
+            --text-danger: #e08579;
+            --border-color: rgba(255, 255, 255, 0.07);
+            --border-input: rgba(255, 255, 255, 0.22);
             --shadow-card: var(--glass-shadow);
-            --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.38);
-            --hp-low-color: #34d399;
-            --hp-mid-color: #fbbf24;
-            --hp-high-color: #fb923c;
-            --hp-vhigh-color: #f87171;
-            --hp-low-bg: rgba(52, 211, 153, 0.06);
-            --hp-mid-bg: rgba(251, 191, 36, 0.06);
-            --hp-high-bg: rgba(251, 146, 60, 0.06);
-            --hp-vhigh-bg: rgba(248, 113, 113, 0.06);
-            /* На тёмном фоне исходные --cat-* цвета (light-тема) теряют контраст — делаем их светлее */
-            --cat-blue: #60a5fa;
-            --cat-amber: #fbbf24;
-            --cat-violet: #c084fc;
+            --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --hp-low-color: #6bbf3f;
+            --hp-mid-color: #f0a93c;
+            --hp-high-color: #f0824a;
+            --hp-vhigh-color: #f0685a;
+            --hp-low-bg: rgba(107, 191, 63, 0.07);
+            --hp-mid-bg: rgba(240, 169, 60, 0.07);
+            --hp-high-bg: rgba(240, 130, 74, 0.07);
+            --hp-vhigh-bg: rgba(240, 104, 90, 0.07);
+            /* Категории — не радуга, а три чётких «ранга»: чёрный/серебро, красный, золото */
+            --cat-blue: #d8d2c4;
+            --cat-amber: #e0574a;
+            --cat-violet: #c99a5f;
         }
 
         body {
@@ -130,22 +139,10 @@
         body::before {
             content: '';
             position: fixed;
-            top: -20%;
-            right: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -15%;
-            left: -10%;
-            width: 40vw;
-            height: 40vw;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 88% -8%, var(--accent-glow) 0%, transparent 45%),
+                radial-gradient(circle at -8% 108%, var(--accent-glow) 0%, transparent 40%);
             pointer-events: none;
             z-index: 0;
         }
@@ -184,7 +181,7 @@
             display: block;
         }
         .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
-        .logo-text .title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; transition: color var(--transition); }
+        .logo-text .title { font-family: var(--font-display); font-size: 23px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.2px; transition: color var(--transition); }
         .logo-text .sub { font-size: 13px; font-weight: 400; color: var(--text-secondary); transition: color var(--transition); }
 
         .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -260,12 +257,12 @@
         #tab-calculator .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
         #tab-calculator .stat-card .stat-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-secondary); margin-bottom:4px; transition:color var(--transition); }
         #tab-calculator .stat-card .stat-value {
-            font-size:26px;
+            font-size: clamp(15px, 2.1vw, 26px);
             font-weight:700;
             color:var(--text-primary);
             transition:color var(--transition);
-            word-break: break-word;
-            overflow-wrap: break-word;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
         #tab-calculator .stat-card .stat-value .small { font-size:14px; font-weight:400; color:var(--text-secondary); margin-left:4px; }
         #tab-calculator .stat-card.accent .stat-value { color:var(--text-link); }
@@ -299,6 +296,7 @@
             border-color:var(--text-link);
             box-shadow:0 0 0 4px var(--accent-glow);
         }
+        #tab-calculator .no-dop-message { font-size:13px; color:var(--text-danger); font-weight:600; margin-top:4px; }
         #tab-calculator .form-info-grid {
             grid-column: 1 / -1;
             display: grid;
@@ -308,17 +306,18 @@
         }
         #tab-calculator .form-info-item {
             background: var(--bg-input-alt);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-input);
             padding: 12px 16px;
             text-align: center;
-            transition: background var(--transition);
+            transition: background var(--transition), border-color var(--transition);
         }
         #tab-calculator .form-info-item .info-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-secondary); transition:color var(--transition); }
         #tab-calculator .form-info-item .info-value { font-size:18px; font-weight:700; color:var(--text-primary); margin-top:2px; transition:color var(--transition); }
-        #tab-calculator .form-info-item.danger .info-value { color:#e74c3c; }
+        #tab-calculator .form-info-item.danger .info-value { color:var(--text-danger); }
         #tab-calculator .form-info-item .no-dop-badge {
-            display:inline-block; background:#fee8e8; color:#b33a3a; font-weight:600; font-size:13px;
-            padding:4px 14px; border-radius:20px; margin-top:2px;
+            display:inline-block; background:var(--bg-btn-danger); color:var(--text-danger); font-weight:600; font-size:13px;
+            padding:4px 14px; border-radius:var(--radius-btn); margin-top:2px;
         }
         #tab-calculator .add-btn-wrap { grid-column:1/-1; display:flex; justify-content:flex-end; margin-top:4px; }
         #tab-calculator .btn-add {
@@ -344,8 +343,8 @@
         #tab-calculator .actions-bar .btn:active { transform: scale(0.97); }
         #tab-calculator .actions-bar .btn-primary { background: var(--bg-btn-primary); color: var(--text-inverse); }
         #tab-calculator .actions-bar .btn-primary:hover { background: var(--bg-btn-primary-hover); }
-        #tab-calculator .actions-bar .btn-danger { background: var(--bg-btn-danger); color: #b33a3a; }
-        #tab-calculator .actions-bar .btn-danger:hover { background: var(--bg-btn-danger-hover); color: #a00000; }
+        #tab-calculator .actions-bar .btn-danger { background: var(--bg-btn-danger); color: var(--text-danger); }
+        #tab-calculator .actions-bar .btn-danger:hover { background: var(--bg-btn-danger-hover); color: var(--text-danger); }
         #tab-calculator .actions-bar .btn-export-png {
             background: var(--bg-btn-primary);
             color: var(--text-inverse);
@@ -448,17 +447,17 @@
         #tab-calculator table.boss-table td .del-btn {
             background: var(--bg-btn-danger);
             border: none;
-            border-radius: 20px;
+            border-radius: var(--radius-btn);
             padding: 4px 12px;
             font-size: 13px;
             font-weight: 600;
-            color: #b33a3a;
+            color: var(--text-danger);
             cursor: pointer;
             transition: background var(--transition), color var(--transition), transform 0.2s;
         }
         #tab-calculator table.boss-table td .del-btn:hover {
             background: var(--bg-btn-danger-hover);
-            color: #a00000;
+            color: var(--text-danger);
             transform: scale(1.05);
         }
         /* Итоговая строка — одна строка */
@@ -555,9 +554,10 @@
         }
         #tab-bosslist .table-header {
             padding: 8px 12px;
+            font-family: var(--font-display);
             font-weight: 700;
-            font-size: 13px;
-            letter-spacing: -0.2px;
+            font-size: 14.5px;
+            letter-spacing: 0.2px;
             border-bottom: 1px solid var(--glass-border);
             background: var(--glass-bg);
             backdrop-filter: blur(8px);
@@ -568,6 +568,7 @@
             transition: background 0.3s, border-color 0.3s;
         }
         #tab-bosslist .table-header .count {
+            font-family: var(--font);
             font-weight: 500;
             font-size: 12px;
             color: var(--text-secondary);
@@ -579,7 +580,7 @@
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
-            font-size: clamp(8px, 0.42vw + 2px, 10.5px);
+            font-size: clamp(9.5px, 0.55vw + 3px, 12px);
             background: inherit;
             min-width: 0;
         }
@@ -604,6 +605,8 @@
             line-height: 1.35;
         }
         #tab-bosslist table tr:last-child td { border-bottom: none; }
+        #tab-bosslist table tbody tr:nth-child(even) { background: var(--bg-table-row-alt); }
+        #tab-bosslist table tbody tr:hover { background: var(--bg-card-hover); }
         #tab-bosslist table tbody tr:hover .col-boss {
             background: var(--bg-card-hover);
         }
@@ -612,6 +615,7 @@
             color: var(--text-primary);
             text-align: left !important;
             width: 22%;
+            border-right: 1px solid var(--border-color);
         }
         #tab-bosslist .hp-cell {
             text-align: right;
@@ -628,21 +632,18 @@
         #tab-bosslist .hp-cell.hp-high  { background: var(--hp-high-bg);  color: var(--hp-high-color); }
         #tab-bosslist .hp-cell.hp-vhigh { background: var(--hp-vhigh-bg); color: var(--hp-vhigh-color); font-weight: 700; }
 
-        /* Ячейки с допками — яркая подсветка с белой обводкой (перекрывает базовую по специфичности) */
+        /* Ячейки с допками — тонкая акцентная рамка вместо белой обводки */
         #tab-bosslist .hp-cell.has-dop {
             cursor: pointer;
-            background: rgba(52, 211, 153, 0.25) !important;
             position: relative;
-            border-radius: 2px;
-            outline: 1px solid rgba(255, 255, 255, 0.8);
-            outline-offset: -1px;
+            border-radius: 4px;
+            border: 1px solid var(--accent-light);
             font-weight: 600;
-            transition: background 0.2s, box-shadow 0.2s, outline 0.2s;
+            transition: border-color 0.2s, background 0.2s;
         }
         #tab-bosslist .hp-cell.has-dop:hover {
+            border-color: var(--accent);
             background: var(--accent-glow) !important;
-            box-shadow: 0 0 0 3px var(--accent), inset 0 0 20px rgba(99, 102, 241, 0.15);
-            outline: 2px solid var(--accent);
             z-index: 2;
         }
         #tab-bosslist .hp-cell.empty {
@@ -651,11 +652,8 @@
             opacity: 0.35;
             cursor: default;
         }
-        /* Переопределяем цвета HP для ячеек с допками (сохраняем оттенки) */
-        #tab-bosslist .hp-cell.has-dop.hp-low   { background: rgba(5, 150, 105, 0.25) !important; }
-        #tab-bosslist .hp-cell.has-dop.hp-mid   { background: rgba(217, 119, 6, 0.25) !important; }
-        #tab-bosslist .hp-cell.has-dop.hp-high  { background: rgba(234, 88, 12, 0.25) !important; }
-        #tab-bosslist .hp-cell.has-dop.hp-vhigh { background: rgba(220, 38, 38, 0.25) !important; }
+        /* Ячейки, скрытые фильтром "только с допками" */
+        #tab-bosslist table tbody tr.dop-filtered-hidden { display: none; }
 
         /* Легенда тепловой карты — цвет иконки соответствует цвету ячеек с таким же HP */
         .hp-legend {
@@ -675,17 +673,35 @@
         .hp-legend-item i {
             width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
             display: inline-block;
+            position: relative;
         }
         .hp-legend-item i.hp-low   { background: var(--hp-low-bg);   box-shadow: inset 0 0 0 1px var(--hp-low-color); }
         .hp-legend-item i.hp-mid   { background: var(--hp-mid-bg);   box-shadow: inset 0 0 0 1px var(--hp-mid-color); }
         .hp-legend-item i.hp-high  { background: var(--hp-high-bg);  box-shadow: inset 0 0 0 1px var(--hp-high-color); }
         .hp-legend-item i.hp-vhigh { background: var(--hp-vhigh-bg); box-shadow: inset 0 0 0 1px var(--hp-vhigh-color); }
         .hp-legend-item i.has-dop {
-            background: rgba(52, 211, 153, 0.25);
-            outline: 1px solid rgba(255,255,255,0.8);
-            outline-offset: -1px;
+            background: transparent;
+            border: 1px solid var(--accent-light);
         }
         .hp-legend-dop { color: var(--text-primary); font-weight: 500; }
+        .hp-legend-toggle {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-left: auto;
+            padding: 5px 12px;
+            background: var(--bg-btn-secondary);
+            border: 1px solid var(--border-input);
+            border-radius: var(--radius-btn);
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 12.5px;
+            font-weight: 500;
+            transition: background var(--transition), color var(--transition), border-color var(--transition);
+            user-select: none;
+        }
+        .hp-legend-toggle:hover { background: var(--bg-btn-secondary-hover); color: var(--text-primary); }
+        .hp-legend-toggle input { accent-color: var(--accent); cursor: pointer; }
+        .hp-legend-toggle.active { background: var(--accent-glow); border-color: var(--accent); color: var(--text-primary); }
+        @media (max-width: 480px) { .hp-legend-toggle { margin-left: 0; width: 100%; justify-content: center; } }
         @media (max-width: 480px) {
             .hp-legend { font-size: 11.5px; padding: 8px 10px; gap: 5px 10px; }
         }
@@ -802,9 +818,45 @@
         #tab-bosslist .bosslist-actions {
             display: flex;
             gap: 10px;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 16px;
             flex-wrap: wrap;
+        }
+        #tab-bosslist .bosslist-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        #tab-bosslist .bosslist-search {
+            flex: 1 1 260px;
+            max-width: 320px;
+        }
+        #tab-bosslist .bosslist-search input {
+            width: 100%;
+            padding: 9px 14px;
+            border: 2px solid var(--border-input);
+            border-radius: var(--radius-btn);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            background: var(--bg-input);
+            outline: none;
+            transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+        }
+        #tab-bosslist .bosslist-search input:focus {
+            border-color: var(--text-link);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+        #tab-bosslist .bosslist-search input::placeholder { color: var(--text-muted); }
+        #tab-bosslist .table-wrapper.filtered-hidden { display: none; }
+        #tab-bosslist table tbody tr.filtered-hidden { display: none; }
+        #tab-bosslist .no-results {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            width: 100%;
         }
 
         /* ===== АДАПТАЦИЯ ===== */
@@ -852,7 +904,7 @@
             #tab-calculator .add-btn-wrap { justify-content:center; }
             #tab-calculator .btn-add { width:100%; justify-content:center; }
             #tab-calculator .stats-grid { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom: 14px; }
-            #tab-calculator .stat-card .stat-value { font-size:20px; }
+            #tab-calculator .stat-card .stat-value { font-size: clamp(13px, 4.4vw, 20px); }
             #tab-calculator .actions-bar { flex-direction:column; align-items:stretch; }
             #tab-calculator .actions-bar .btn { justify-content:center; width:100%; }
             #tab-calculator table.boss-table { font-size:11px; min-width:820px; }
@@ -874,8 +926,9 @@
             #tab-bosslist .hp-cell { font-size: 11px; min-width: 68px; }
             #tab-bosslist .table-header { font-size: 13px; padding: 8px 12px; }
             #tab-bosslist .btn-export2,
-            #tab-bosslist .btn-export-png2 { width: 100%; justify-content: center; }
+            #tab-bosslist .btn-export-png2 { flex: 1; justify-content: center; }
             #tab-bosslist .bosslist-actions { flex-direction: column; align-items: stretch; }
+            #tab-bosslist .bosslist-search { flex: none; max-width: none; }
         }
         @media (max-width: 480px) {
             .logo-text .title { font-size:18px; }
@@ -883,8 +936,8 @@
             .logo-icon { width:36px; height:36px; }
             .header-actions .btn-link { font-size: 13px; padding: 6px 10px; }
             #tab-calculator .stats-grid { grid-template-columns:1fr 1fr; gap:6px; }
-            #tab-calculator .stat-card { padding:12px 10px; }
-            #tab-calculator .stat-card .stat-value { font-size:16px; word-break: break-word; }
+            #tab-calculator .stat-card { padding:12px 8px; }
+            #tab-calculator .stat-card .stat-value { font-size: clamp(11px, 4.6vw, 16px); }
             #tab-calculator .stat-card .stat-label { font-size:10px; }
             #tab-calculator .form-info-grid { grid-template-columns:1fr 1fr; }
             #tab-calculator .form-info-item .info-value { font-size:15px; }
@@ -958,7 +1011,7 @@
                     <div class="field-group">
                         <label for="tatuSelect">Доп. наград за нападение</label>
                         <select id="tatuSelect"></select>
-                        <div id="noDopMessage" style="display:none; font-size:13px; color:#b33a3a; font-weight:600; margin-top:4px;">⚠️ Нет доп. наград</div>
+                        <div id="noDopMessage" class="no-dop-message" style="display:none;">⚠️ Нет доп. наград</div>
                     </div>
                     <div class="field-group">
                         <label for="attackLimitInput">Лимит нападений</label>
@@ -1046,8 +1099,13 @@
     <!-- ===== ТАБ 2: СПИСОК БОССОВ ===== -->
     <div class="tab-content" id="tab-bosslist">
         <div class="bosslist-actions">
-            <button class="btn-export2" id="exportBtn2">⬇ Экспорт в Excel</button>
-            <button class="btn-export-png2" id="exportBtnPng2">🖼 Экспорт PNG</button>
+            <div class="bosslist-search">
+                <input type="text" id="bossSearchInput" placeholder="🔍 Поиск босса по имени…" autocomplete="off">
+            </div>
+            <div class="bosslist-buttons">
+                <button class="btn-export2" id="exportBtn2">⬇ Экспорт в Excel</button>
+                <button class="btn-export-png2" id="exportBtnPng2">🖼 Экспорт PNG</button>
+            </div>
         </div>
         <p class="scroll-hint">← Листайте таблицы влево-вправо →</p>
         <div class="hp-legend">
@@ -1056,6 +1114,9 @@
             <span class="hp-legend-item"><i class="hp-high"></i>Высокий HP</span>
             <span class="hp-legend-item"><i class="hp-vhigh"></i>Очень высокий HP</span>
             <span class="hp-legend-item hp-legend-dop"><i class="has-dop"></i>Есть допки — нажмите на ячейку</span>
+            <label class="hp-legend-toggle" id="dopOnlyToggle">
+                <input type="checkbox" id="dopOnlyCheckbox">Только с допками
+            </label>
         </div>
         <div class="tables-grid" id="tablesContainer2">
             <p style="padding: 20px; text-align: center; width: 100%;">Загрузка...</p>
@@ -1085,6 +1146,13 @@
         globalToastTimer = setTimeout(() => {
             toastEl.classList.remove('show');
         }, 2500);
+    }
+
+    // Сплошной цвет фона темы для PNG-экспорта — карточки полупрозрачные
+    // (glass-эффект), поэтому их computed backgroundColor не годится для canvas.
+    function getExportBgColor() {
+        const val = getComputedStyle(document.documentElement).getPropertyValue('--bg-gradient-2').trim();
+        return val || '#ffffff';
     }
 
     // ================================================================
@@ -1117,8 +1185,7 @@
     (function loadTheme() {
         const saved = localStorage.getItem('dopkiTheme');
         if (saved) setTheme(saved);
-        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
-        else setTheme('light');
+        else setTheme('dark');
     })();
 
     // ================================================================
@@ -1820,7 +1887,7 @@
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: window.getComputedStyle(wrap).backgroundColor || '#ffffff'
+                    backgroundColor: getExportBgColor()
                 }).then(canvas => {
                     const link = document.createElement('a');
                     link.download = 'boss_table.png';
@@ -2145,6 +2212,8 @@
             const tbody = document.createElement('tbody');
             bossList.forEach(boss => {
                 const tr = document.createElement('tr');
+                tr.dataset.name = boss.name.toLowerCase();
+                let rowHasDop = false;
                 const tdName = document.createElement('td');
                 tdName.className = 'col-boss';
                 tdName.textContent = boss.name;
@@ -2179,6 +2248,7 @@
                         }
 
                         if (hasDop) {
+                            rowHasDop = true;
                             td.classList.add('has-dop');
                             td.dataset.boss = boss.name;
                             td.dataset.mode = modeKey;
@@ -2192,10 +2262,11 @@
                         }
                     } else {
                         td.classList.add('empty');
-                        td.textContent = '';
+                        td.textContent = '—';
                     }
                     tr.appendChild(td);
                 }
+                tr.dataset.hasDop = rowHasDop ? '1' : '0';
                 tbody.appendChild(tr);
             });
             table.appendChild(tbody);
@@ -2210,6 +2281,44 @@
             const tableEl = buildTable(cat, list);
             tablesContainer.appendChild(tableEl);
         });
+
+        // ================================================================
+        // ПОИСК ПО ИМЕНИ + ФИЛЬТР "ТОЛЬКО С ДОПКАМИ"
+        // ================================================================
+        const bossSearchInput = document.getElementById('bossSearchInput');
+        const dopOnlyCheckbox = document.getElementById('dopOnlyCheckbox');
+        const dopOnlyToggle = document.getElementById('dopOnlyToggle');
+        const noResultsMsg = document.createElement('p');
+        noResultsMsg.className = 'no-results';
+        noResultsMsg.textContent = 'Ничего не найдено';
+        noResultsMsg.style.display = 'none';
+        tablesContainer.appendChild(noResultsMsg);
+
+        function applyFilters() {
+            const query = bossSearchInput ? bossSearchInput.value.trim().toLowerCase() : '';
+            const dopOnly = dopOnlyCheckbox ? dopOnlyCheckbox.checked : false;
+            if (dopOnlyToggle) dopOnlyToggle.classList.toggle('active', dopOnly);
+
+            let anyVisible = false;
+            tablesContainer.querySelectorAll('.table-wrapper').forEach(wrapper => {
+                let visibleInTable = 0;
+                wrapper.querySelectorAll('tbody tr').forEach(row => {
+                    const matchesName = !query || (row.dataset.name || '').includes(query);
+                    const matchesDop = !dopOnly || row.dataset.hasDop === '1';
+                    const match = matchesName && matchesDop;
+                    row.classList.toggle('filtered-hidden', !match);
+                    if (match) visibleInTable++;
+                });
+                wrapper.classList.toggle('filtered-hidden', visibleInTable === 0);
+                const countEl = wrapper.querySelector('.table-header .count');
+                if (countEl) countEl.textContent = `(${visibleInTable})`;
+                if (visibleInTable > 0) anyVisible = true;
+            });
+            noResultsMsg.style.display = anyVisible ? 'none' : 'block';
+        }
+
+        if (bossSearchInput) bossSearchInput.addEventListener('input', applyFilters);
+        if (dopOnlyCheckbox) dopOnlyCheckbox.addEventListener('change', applyFilters);
 
         // ================================================================
         // ОБРАБОТЧИКИ TOOLTIP И КЛИКА
@@ -2355,86 +2464,57 @@
             }
         });
 
-        // Экспорт Excel для списка боссов
+        // Экспорт Excel для списка боссов — единая таблица (одна книга, один лист),
+        // чтобы Excel корректно принял все строки как один набор данных
+        // (сортировка/фильтры работают, а не 3 несвязанных HTML-таблицы).
         document.getElementById('exportBtn2').addEventListener('click', function() {
-            let html = `
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background: white; }
-                    h1 { font-size: 24px; }
-                    .tables-grid { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
-                    .table-wrapper { border: 1px solid #ccc; border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
-                    .table-header { background: #f0f0f0; padding: 10px 14px; font-weight: bold; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; }
-                    .table-scroll { overflow: auto; }
-                    table { border-collapse: collapse; width: 100%; font-size: 13px; }
-                    th { background: #e9ecef; padding: 6px 8px; border: 1px solid #ccc; text-align: left; white-space: nowrap; }
-                    td { padding: 5px 8px; border: 1px solid #ccc; text-align: left; white-space: nowrap; }
-                    .col-boss { font-weight: 500; }
-                    .hp-cell { text-align: right; padding-right: 10px; }
-                    .hp-low { background: #e6f4e6; }
-                    .hp-mid { background: #fff9e6; }
-                    .hp-high { background: #ffede0; }
-                    .hp-vhigh { background: #fce4e4; }
-                    .empty { background: white !important; color: #999; }
-                    .cat-besprel .table-header { background: #e6f0fa; color: #1e3a8a; }
-                    .cat-nadzir .table-header { background: #fef3e6; color: #92400e; }
-                    .cat-recidiv .table-header { background: #f3e8ff; color: #5b21b6; }
-                </style>
-            </head>
-            <body>
-                <h1>📋 Боссы</h1>
-                <div class="tables-grid">
+            const allModes = ['Пацанский', 'Блатной', 'Авторитетный', 'Воровской'];
+            const allBosses = categories.flatMap(cat => grouped[cat] || []);
+
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8">` +
+                `<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Список боссов</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->` +
+                `<style>
+                    table { border-collapse: collapse; font-family:'Segoe UI',sans-serif; font-size: 11pt; }
+                    th { background:#dce5f0; font-weight:bold; text-align:center; border:1px solid #999; padding:6px; }
+                    td { border:1px solid #999; padding:5px 8px; text-align:center; }
+                    .col-cat { text-align:left; }
+                    .col-boss { text-align:left; font-weight:600; }
+                    .hp-low   { background:#e6f4e6; }
+                    .hp-mid   { background:#fff9e6; }
+                    .hp-high  { background:#ffede0; }
+                    .hp-vhigh { background:#fce4e4; }
+                    .has-dop  { border-left:3px solid #2f7d32; }
+                    .note { font-size:9pt; color:#666; }
+                </style></head><body>
+                <table>
+                <tr><td colspan="${2 + allModes.length}" class="note" style="border:none;text-align:left;">Зелёная полоса слева у ячейки — за нападение в этом режиме даются доп. награды (допки).</td></tr>
+                <tr><th>Категория</th><th>Босс</th>${allModes.map(m => `<th>${m}</th>`).join('')}</tr>
             `;
 
-            categories.forEach(cat => {
-                const list = grouped[cat] || [];
-                if (list.length === 0) return;
-                const catClass = cat === 'Беспредельщики' ? 'cat-besprel' :
-                                 cat === 'Надзиратели' ? 'cat-nadzir' : 'cat-recidiv';
-                const columns = columnsConfig[cat] || ['Босс', 'Пацанский', 'Блатной', 'Авторитетный'];
-
-                html += `
-                <div class="table-wrapper ${catClass}">
-                    <div class="table-header">
-                        <span>${cat}</span>
-                        <span>(${list.length})</span>
-                    </div>
-                    <div class="table-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                `;
-                columns.forEach(col => {
-                    html += `<th>${col}</th>`;
-                });
-                html += `</tr></thead><tbody>`;
-
-                list.forEach(boss => {
-                    html += `<tr><td class="col-boss">${boss.name}</td>`;
-                    for (let i = 1; i < columns.length; i++) {
-                        const mode = columns[i];
-                        if (boss.modes.includes(mode)) {
-                            const hp = boss.hp * modeMultipliers[mode];
-                            const cls = getHpClass(hp);
-                            html += `<td class="hp-cell ${cls}" style="mso-number-format:'#,##0';">${Math.round(hp)}</td>`;
-                        } else {
-                            html += `<td class="hp-cell empty"></td>`;
+            allBosses.forEach(boss => {
+                html += `<tr><td class="col-cat">${boss.category}</td><td class="col-boss">${boss.name}</td>`;
+                allModes.forEach(mode => {
+                    if (boss.modes.includes(mode)) {
+                        const hp = boss.hp * modeMultipliers[mode];
+                        const cls = getHpClass(hp);
+                        const modeKey = modeKeyMap[mode];
+                        const bossData = BOSSES[boss.name];
+                        let hasDop = false;
+                        if (bossData && bossData.modes && bossData.modes[modeKey]) {
+                            const modeData = bossData.modes[modeKey];
+                            hasDop = modeData.dmg !== null && modeData.max > 0;
                         }
+                        html += `<td class="${cls}${hasDop ? ' has-dop' : ''}" style="mso-number-format:'#,##0';">${Math.round(hp)}</td>`;
+                    } else {
+                        html += `<td></td>`;
                     }
-                    html += `</tr>`;
                 });
-                html += `</tbody></table></div></div>`;
+                html += `</tr>`;
             });
 
-            html += `
-                </div>
-            </body>
-            </html>
-            `;
+            html += `</table></body></html>`;
 
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.href = url;
@@ -2443,6 +2523,7 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+            showToast('📄 Экспорт Excel выполнен');
         });
 
         // Экспорт PNG для списка боссов
@@ -2460,7 +2541,7 @@
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: window.getComputedStyle(wrap).backgroundColor || '#ffffff'
+                    backgroundColor: getExportBgColor()
                 }).then(canvas => {
                     const link = document.createElement('a');
                     link.download = 'bosses_list.png';

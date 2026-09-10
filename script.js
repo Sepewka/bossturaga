@@ -41,9 +41,12 @@
         };
     }
 
-    // Строка водяного знака для HTML/Excel-экспортов (обычный текст в углу документа).
-    function xlsWatermarkLine() {
-        return `<p style="font-family:'Segoe UI',sans-serif;font-size:8pt;color:#999;text-align:right;margin:0 0 6px;">${EXPORT_WATERMARK_TEXT}</p>`;
+    // Строка водяного знака для HTML/Excel-экспортов. Google Таблицы (в отличие
+    // от Excel) не умеют в свободные <p> вне таблицы — весь текст обязательно
+    // должен лежать внутри <tr>/<td>, иначе он слипается в одну ячейку.
+    function xlsWatermarkRow(colspan, extraNote) {
+        const text = extraNote ? `${extraNote} &nbsp;&middot;&nbsp; ${EXPORT_WATERMARK_TEXT}` : EXPORT_WATERMARK_TEXT;
+        return `<tr><td colspan="${colspan}" style="border:none;text-align:${extraNote ? 'left' : 'right'};font-family:'Segoe UI',sans-serif;font-size:8pt;color:#999;padding:2px 4px 8px;">${text}</td></tr>`;
     }
 
     // ================================================================
@@ -780,9 +783,9 @@
 
         function exportXLS() {
             if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
-            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}.total td{color:#ffffff;}</style></head><body>` + xlsWatermarkLine();
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}.total td{color:#ffffff;}</style></head><body>`;
             const headers = ['Босс','Режим','HP','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
-            html += '<table><thead><tr>';
+            html += '<table><thead>' + xlsWatermarkRow(headers.length) + '<tr>';
             headers.forEach(h => html += `<th>${h}</th>`);
             html += '</tr></thead><tbody>';
             let sumHp=0,sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
@@ -1416,10 +1419,7 @@
                 `<style>
                     table.boss-cat { border-collapse: collapse; font-family:'Segoe UI',sans-serif; font-size: 11pt; }
                     table.boss-cat td, table.boss-cat th { border:1px solid #999; padding:5px 8px; text-align:center; }
-                </style></head><body>
-                <p style="font-family:'Segoe UI',sans-serif;font-size:9pt;color:#666;margin:0 0 4px;">Жёлтая заливка — в этом режиме можно пробить доп. награды (допки).</p>
-                ${xlsWatermarkLine()}
-            `;
+                </style></head><body>`;
 
             // Каждую категорию строим в отдельную мини-таблицу, а затем кладём
             // их рядом друг с другом в ячейках одной внешней строки — иначе
@@ -1464,7 +1464,9 @@
                 catBlocks.push(block);
             });
 
-            html += `<table style="border-collapse:collapse;"><tr>` +
+            html += `<table style="border-collapse:collapse;">` +
+                xlsWatermarkRow(catBlocks.length, 'Жёлтая заливка — в этом режиме можно пробить доп. награды (допки).') +
+                `<tr>` +
                 catBlocks.map((block, i) => `<td style="border:none;vertical-align:top;padding:0 ${i < catBlocks.length - 1 ? 16 : 0}px 0 0;">${block}</td>`).join('') +
                 `</tr></table>`;
 

@@ -620,20 +620,34 @@
         #tab-bosslist .hp-cell.hp-vhigh { background: var(--hp-vhigh-bg); color: var(--hp-vhigh-color); font-weight: 700; }
 
         /* Ячейки с допками — тонкая акцентная рамка вместо белой обводки */
+        /* Уголок-закладка вместо рамки — рамка на соседних ячейках при border-collapse
+           стыкуется неровно (где-то виден угол, где-то нет), а уголок ни от чего
+           не зависит и смотрится чисто в любом окружении. */
         #tab-bosslist .hp-cell.has-dop {
             cursor: pointer;
             position: relative;
-            border-radius: 4px;
-            border: 2px solid var(--accent-light);
             font-weight: 700;
-            transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
+            transition: background 0.15s;
+        }
+        #tab-bosslist .hp-cell.has-dop::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 13px 13px 0;
+            border-color: transparent var(--accent-light) transparent transparent;
+            transition: border-color 0.15s, border-width 0.15s;
         }
         #tab-bosslist .hp-cell.has-dop:hover {
-            border-color: var(--accent);
             background: var(--accent-glow) !important;
-            box-shadow: 0 0 10px 1px var(--accent-glow);
-            transform: scale(1.05);
             z-index: 2;
+        }
+        #tab-bosslist .hp-cell.has-dop:hover::after {
+            border-color: transparent var(--accent) transparent transparent;
+            border-width: 0 17px 17px 0;
         }
         #tab-bosslist .hp-cell.empty {
             background: transparent !important;
@@ -670,7 +684,17 @@
         .hp-legend-item i.hp-vhigh { background: var(--hp-vhigh-bg); box-shadow: inset 0 0 0 1px var(--hp-vhigh-color); }
         .hp-legend-item i.has-dop {
             background: transparent;
-            border: 2px solid var(--accent-light);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .hp-legend-item i.has-dop::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 12px 12px 0;
+            border-color: transparent var(--accent-light) transparent transparent;
         }
         .hp-legend-dop { color: var(--text-primary); font-weight: 500; }
         .hp-legend-toggle {

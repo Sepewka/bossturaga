@@ -20,6 +20,32 @@
         return val || '#ffffff';
     }
 
+    const EXPORT_WATERMARK_TEXT = 'by Пекарь · dopki.ru';
+
+    // Временно добавляет водяной знак в угол контейнера перед html2canvas-снимком.
+    // Возвращает функцию для удаления знака после того, как канвас отрисован.
+    function addPngWatermark(wrap) {
+        const hadInlinePosition = wrap.style.position;
+        if (getComputedStyle(wrap).position === 'static') {
+            wrap.style.position = 'relative';
+        }
+        const wm = document.createElement('div');
+        wm.textContent = EXPORT_WATERMARK_TEXT;
+        wm.style.cssText = 'position:absolute;right:8px;bottom:6px;font-size:11px;font-weight:600;' +
+            'color:rgba(150,130,100,0.6);pointer-events:none;user-select:none;white-space:nowrap;' +
+            'z-index:99999;font-family:Segoe UI,Arial,sans-serif;';
+        wrap.appendChild(wm);
+        return function removePngWatermark() {
+            if (wm.parentNode) wm.parentNode.removeChild(wm);
+            wrap.style.position = hadInlinePosition;
+        };
+    }
+
+    // Строка водяного знака для HTML/Excel-экспортов (обычный текст в углу документа).
+    function xlsWatermarkLine() {
+        return `<p style="font-family:'Segoe UI',sans-serif;font-size:8pt;color:#999;text-align:right;margin:0 0 6px;">${EXPORT_WATERMARK_TEXT}</p>`;
+    }
+
     // ================================================================
     // 1. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
     // ================================================================
@@ -754,7 +780,7 @@
 
         function exportXLS() {
             if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
-            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}.total td{color:#ffffff;}</style></head><body>`;
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Боссы</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table{border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:12pt;}th{background:#dce5f0;font-weight:bold;text-align:center;border:1px solid #999;padding:6px;}td{border:1px solid #999;padding:6px;text-align:center;}.total{background:#0b1a2e;color:#ffffff;font-weight:bold;}.total td{color:#ffffff;}</style></head><body>` + xlsWatermarkLine();
             const headers = ['Босс','Режим','HP','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
             html += '<table><thead><tr>';
             headers.forEach(h => html += `<th>${h}</th>`);
@@ -781,6 +807,7 @@
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
             script.onload = function() {
+                const removeWatermark = addPngWatermark(wrap);
                 html2canvas(wrap, {
                     scale: 2,
                     useCORS: true,
@@ -795,7 +822,7 @@
                 }).catch(err => {
                     console.error(err);
                     showToast('⚠️ Ошибка при создании PNG');
-                });
+                }).finally(removeWatermark);
             };
             script.onerror = function() {
                 showToast('⚠️ Не удалось загрузить библиотеку html2canvas');
@@ -1366,55 +1393,82 @@
             }
         });
 
-        // Экспорт Excel для списка боссов — единая таблица (одна книга, один лист),
-        // чтобы Excel корректно принял все строки как один набор данных
-        // (сортировка/фильтры работают, а не 3 несвязанных HTML-таблицы).
+        // Экспорт Excel для списка боссов — по таблице на категорию (друг под другом
+        // в одном листе), как на сайте. Цвета — только через inline style="", так как
+        // Excel при импорте HTML часто игнорирует классы из <style>.
         document.getElementById('exportBtn2').addEventListener('click', function() {
-            const allModes = ['Пацанский', 'Блатной', 'Авторитетный', 'Воровской'];
-            const allBosses = categories.flatMap(cat => grouped[cat] || []);
+            const catStyle = {
+                'Беспредельщики': { bg: '#221c15', fg: '#ffffff' },
+                'Надзиратели':    { bg: '#b3261e', fg: '#ffffff' },
+                'Рецидивисты':    { bg: '#96721a', fg: '#ffffff' }
+            };
+            const hpBg = { 'hp-low': '#e6f4e6', 'hp-mid': '#fff9e6', 'hp-high': '#ffede0', 'hp-vhigh': '#fce4e4' };
+            const hpFg = { 'hp-low': '#2e7d32', 'hp-mid': '#a06a00', 'hp-high': '#c4551a', 'hp-vhigh': '#c0392b' };
+            // Ячейки с допками — один и тот же яркий цвет заливки независимо от
+            // уровня HP, чтобы сразу было видно, у кого есть допки, без
+            // всматривания в оттенки. Рамки не используем — у соседних допковых
+            // ячеек они сливаются в один контур вокруг всей группы ("тоннель").
+            const DOP_BG = '#ffc107';
+            const DOP_FG = '#1a1a1a';
 
             let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8">` +
                 `<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Список боссов</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->` +
                 `<style>
-                    table { border-collapse: collapse; font-family:'Segoe UI',sans-serif; font-size: 11pt; }
-                    th { background:#dce5f0; font-weight:bold; text-align:center; border:1px solid #999; padding:6px; }
-                    td { border:1px solid #999; padding:5px 8px; text-align:center; }
-                    .col-cat { text-align:left; }
-                    .col-boss { text-align:left; font-weight:600; }
-                    .hp-low   { background:#e6f4e6; }
-                    .hp-mid   { background:#fff9e6; }
-                    .hp-high  { background:#ffede0; }
-                    .hp-vhigh { background:#fce4e4; }
-                    .has-dop  { border-left:3px solid #2f7d32; }
-                    .note { font-size:9pt; color:#666; }
+                    table.boss-cat { border-collapse: collapse; font-family:'Segoe UI',sans-serif; font-size: 11pt; }
+                    table.boss-cat td, table.boss-cat th { border:1px solid #999; padding:5px 8px; text-align:center; }
                 </style></head><body>
-                <table>
-                <tr><td colspan="${2 + allModes.length}" class="note" style="border:none;text-align:left;">Зелёная полоса слева у ячейки — за нападение в этом режиме даются доп. награды (допки).</td></tr>
-                <tr><th>Категория</th><th>Босс</th>${allModes.map(m => `<th>${m}</th>`).join('')}</tr>
+                <p style="font-family:'Segoe UI',sans-serif;font-size:9pt;color:#666;margin:0 0 4px;">Жёлтая заливка — в этом режиме можно пробить доп. награды (допки).</p>
+                ${xlsWatermarkLine()}
             `;
 
-            allBosses.forEach(boss => {
-                html += `<tr><td class="col-cat">${boss.category}</td><td class="col-boss">${boss.name}</td>`;
-                allModes.forEach(mode => {
-                    if (boss.modes.includes(mode)) {
-                        const hp = boss.hp * modeMultipliers[mode];
-                        const cls = getHpClass(hp);
-                        const modeKey = modeKeyMap[mode];
-                        const bossData = BOSSES[boss.name];
-                        let hasDop = false;
-                        if (bossData && bossData.modes && bossData.modes[modeKey]) {
-                            const modeData = bossData.modes[modeKey];
-                            hasDop = modeData.dmg !== null && modeData.max > 0;
+            // Каждую категорию строим в отдельную мини-таблицу, а затем кладём
+            // их рядом друг с другом в ячейках одной внешней строки — иначе
+            // при простом перечислении <table> подряд Excel ставит их одну под
+            // другой, а не в ряд, как на сайте.
+            const catBlocks = [];
+            categories.forEach(cat => {
+                const list = grouped[cat] || [];
+                if (list.length === 0) return;
+                const columns = columnsConfig[cat] || ['Босс', 'Пацанский', 'Блатной', 'Авторитетный'];
+                const cs = catStyle[cat] || { bg: '#444', fg: '#fff' };
+
+                let block = `<table class="boss-cat"><tr><th colspan="${columns.length}" style="background:${cs.bg};color:${cs.fg};font-size:13pt;text-align:left;padding:8px 10px;">${cat} (${list.length})</th></tr>`;
+                block += `<tr>${columns.map(col => `<th style="background:#e9ecef;">${col}</th>`).join('')}</tr>`;
+
+                list.forEach((boss, rowIdx) => {
+                    const rowBg = rowIdx % 2 === 1 ? '#f6f4ee' : '#ffffff';
+                    block += `<tr><td style="background:${rowBg};text-align:left;font-weight:600;">${boss.name}</td>`;
+                    for (let i = 1; i < columns.length; i++) {
+                        const mode = columns[i];
+                        if (boss.modes.includes(mode)) {
+                            const hp = boss.hp * modeMultipliers[mode];
+                            const cls = getHpClass(hp);
+                            const modeKey = modeKeyMap[mode];
+                            const bossData = BOSSES[boss.name];
+                            let hasDop = false;
+                            if (bossData && bossData.modes && bossData.modes[modeKey]) {
+                                const modeData = bossData.modes[modeKey];
+                                hasDop = modeData.dmg !== null && modeData.max > 0;
+                            }
+                            const cellBg = hasDop ? DOP_BG : hpBg[cls];
+                            const cellFg = hasDop ? DOP_FG : hpFg[cls];
+                            const cellBold = hasDop || cls === 'hp-vhigh';
+                            block += `<td style="background:${cellBg};color:${cellFg};font-weight:${cellBold ? 'bold' : 'normal'};mso-number-format:'#,##0';">${Math.round(hp)}</td>`;
+                        } else {
+                            block += `<td style="background:${rowBg};"></td>`;
                         }
-                        html += `<td class="${cls}${hasDop ? ' has-dop' : ''}" style="mso-number-format:'#,##0';">${Math.round(hp)}</td>`;
-                    } else {
-                        html += `<td></td>`;
                     }
+                    block += `</tr>`;
                 });
-                html += `</tr>`;
+                block += `</table>`;
+                catBlocks.push(block);
             });
 
-            html += `</table></body></html>`;
+            html += `<table style="border-collapse:collapse;"><tr>` +
+                catBlocks.map((block, i) => `<td style="border:none;vertical-align:top;padding:0 ${i < catBlocks.length - 1 ? 16 : 0}px 0 0;">${block}</td>`).join('') +
+                `</tr></table>`;
+
+            html += `</body></html>`;
 
             const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const link = document.createElement('a');
@@ -1439,6 +1493,7 @@
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
             script.onload = function() {
+                const removeWatermark = addPngWatermark(wrap);
                 html2canvas(wrap, {
                     scale: 2,
                     useCORS: true,
@@ -1453,7 +1508,7 @@
                 }).catch(err => {
                     console.error(err);
                     showToast('⚠️ Ошибка при создании PNG');
-                });
+                }).finally(removeWatermark);
             };
             script.onerror = function() {
                 showToast('⚠️ Не удалось загрузить библиотеку html2canvas');
@@ -1462,4 +1517,3 @@
         });
 
     })();
-

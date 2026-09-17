@@ -1,4 +1,4 @@
-    // ================================================================
+// ================================================================
     // ГЛОБАЛЬНЫЙ TOAST
     // ================================================================
     let globalToastTimer = null;
@@ -208,7 +208,7 @@
                     '1': { dmg: 30000000, max: 2 },
                     '3': { dmg: 40000000, max: 2 },
                     '6': { dmg: 40000000, max: 3 },
-                    '12': { dmg: 45000000, max: 3 }
+                    '12': { dmg: 90000000, max: 2 }
                 }
             },
             // Боссы без допок (не будут в выпадающем списке)
@@ -288,6 +288,24 @@
                     '1': { dmg: null, max: 0 },
                     '3': { dmg: null, max: 0 },
                     '6': { dmg: 20000000, max: 3 }
+                }
+            },
+            'Сыч': {
+                hp: 1000000000,
+                modes: {
+                    '1':  { dmg: 30000000, max: 2 },
+                    '3':  { dmg: 30000000, max: 3 },
+                    '6':  { dmg: 40000000, max: 3 },
+                    '12': { dmg: 90000000, max: 2 }
+                }
+            },
+            'Гром': {
+                hp: 70000000000,
+                modes: {
+                    '1': { dmg: 50000000, max: 3 },
+                    '3': { dmg: 60000000, max: 5 },
+                    '6': { dmg: 80000000, max: 5 },
+                    '12': { dmg: null, max: 0 }
                 }
             }
         };
@@ -437,6 +455,7 @@
             }
 
             if (baseHp > 0 && dmgPerTatu > 0 && attackLimit > 0) {
+                if (attackLimit > 10) attackLimit = 10;
                 return { name, baseHp, mode, dmgPerTatu, tatuPerAttack, attackLimit };
             }
             return null;
@@ -572,7 +591,9 @@
         function addFromForm() {
             const bossName = bossSelect.value;
             const mode = modeSelect.value;
-            const attackLimit = parseInt(attackLimitInput.value) || 9;
+            let attackLimit = parseInt(attackLimitInput.value) || 9;
+            if (attackLimit < 1) attackLimit = 1;
+            if (attackLimit > 10) attackLimit = 10;
             const tatuPerAttack = parseInt(tatuSelect.value) || 0;
 
             const bossData = BOSSES[bossName];
@@ -1052,7 +1073,9 @@
             { name: "Дантист",   category: "Надзиратели", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Чугун",     category: "Надзиратели", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Кнут",      category: "Надзиратели", hp: 500000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Сыч",       category: "Надзиратели", hp: 1000000000,  modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Крест",     category: "Надзиратели", hp: 5000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Гром",      category: "Надзиратели", hp: 70000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
             // Рецидивисты
             { name: "Жестянщики", category: "Рецидивисты", hp: 1000000,   modes: ["Пацанский"] },
             { name: "Отбой",      category: "Рецидивисты", hp: 5000000,   modes: ["Пацанский"] },
@@ -1523,4 +1546,3 @@
         });
 
     })();
-

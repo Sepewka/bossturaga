@@ -13,8 +13,6 @@
         }, 2500);
     }
 
-    // Сплошной цвет фона темы для PNG-экспорта — карточки полупрозрачные
-    // (glass-эффект), поэтому их computed backgroundColor не годится для canvas.
     function getExportBgColor() {
         const val = getComputedStyle(document.documentElement).getPropertyValue('--bg-gradient-2').trim();
         return val || '#ffffff';
@@ -22,8 +20,6 @@
 
     const EXPORT_WATERMARK_TEXT = 'by Пекарь · dopki.ru';
 
-    // Временно добавляет водяной знак в угол контейнера перед html2canvas-снимком.
-    // Возвращает функцию для удаления знака после того, как канвас отрисован.
     function addPngWatermark(wrap) {
         const hadInlinePosition = wrap.style.position;
         if (getComputedStyle(wrap).position === 'static') {
@@ -41,9 +37,6 @@
         };
     }
 
-    // Строка водяного знака для HTML/Excel-экспортов. Google Таблицы (в отличие
-    // от Excel) не умеют в свободные <p> вне таблицы — весь текст обязательно
-    // должен лежать внутри <tr>/<td>, иначе он слипается в одну ячейку.
     function xlsWatermarkRow(colspan, extraNote) {
         const text = extraNote ? `${extraNote} &nbsp;&middot;&nbsp; ${EXPORT_WATERMARK_TEXT}` : EXPORT_WATERMARK_TEXT;
         return `<tr><td colspan="${colspan}" style="border:none;text-align:${extraNote ? 'left' : 'right'};font-family:'Segoe UI',sans-serif;font-size:8pt;color:#999;padding:2px 4px 8px;">${text}</td></tr>`;
@@ -63,7 +56,7 @@
     });
 
     // ================================================================
-    // 2. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ (общий)
+    // 2. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ
     // ================================================================
     function getTheme() { return document.documentElement.getAttribute('data-theme') || 'light'; }
     function setTheme(theme) {
@@ -113,15 +106,16 @@
     }
 
     // ================================================================
-    // 4. СКРИПТ КАЛЬКУЛЯТОРА (первый файл) — с обновлёнными допками для Контрабаса
+    // 4. КАЛЬКУЛЯТОР
     // ================================================================
     (function calculator() {
         'use strict';
 
         const MODES = {
-            '1': { label: 'Пацанский', multiplier: 1 },
-            '3': { label: 'Блатной', multiplier: 3 },
-            '6': { label: 'Авторитетный', multiplier: 6 },
+            '0':  { label: 'Бригадный', multiplier: 1 },
+            '1':  { label: 'Пацанский', multiplier: 1 },
+            '3':  { label: 'Блатной', multiplier: 3 },
+            '6':  { label: 'Авторитетный', multiplier: 6 },
             '12': { label: 'Воровской', multiplier: 12 }
         };
 
@@ -129,9 +123,10 @@
             'Бугор': {
                 hp: 1000000000,
                 modes: {
-                    '1': { dmg: 10000000, max: 2 },
-                    '3': { dmg: 12000000, max: 3 },
-                    '6': { dmg: null, max: 0 },
+                    '0':  { dmg: 10000000, max: 2 },
+                    '1':  { dmg: 10000000, max: 2 },
+                    '3':  { dmg: 12000000, max: 3 },
+                    '6':  { dmg: null, max: 0 },
                     '12': { dmg: 45000000, max: 2 }
                 }
             },
@@ -169,18 +164,20 @@
             'Чугун': {
                 hp: 400000000,
                 modes: {
-                    '1': { dmg: 12000000, max: 2 },
-                    '3': { dmg: 10000000, max: 3 },
-                    '6': { dmg: null, max: 0 },
+                    '0':  { dmg: 12000000, max: 1 },
+                    '1':  { dmg: 12000000, max: 2 },
+                    '3':  { dmg: 10000000, max: 3 },
+                    '6':  { dmg: null, max: 0 },
                     '12': { dmg: 35000000, max: 2 }
                 }
             },
             'Кнут': {
                 hp: 500000000,
                 modes: {
-                    '1': { dmg: 15000000, max: 2 },
-                    '3': { dmg: null, max: 0 },
-                    '6': { dmg: 20000000, max: 3 },
+                    '0':  { dmg: 15000000, max: 1 },
+                    '1':  { dmg: 15000000, max: 2 },
+                    '3':  { dmg: null, max: 0 },
+                    '6':  { dmg: 20000000, max: 3 },
                     '12': { dmg: 40000000, max: 2 }
                 }
             },
@@ -211,7 +208,6 @@
                     '12': { dmg: 90000000, max: 2 }
                 }
             },
-            // Боссы без допок (не будут в выпадающем списке)
             'Мазай': {
                 hp: 25000000,
                 modes: {
@@ -236,13 +232,13 @@
                     '6': { dmg: null, max: 0 }
                 }
             },
-            // Боссы с допками
             'Старшой': {
                 hp: 600000000,
                 modes: {
-                    '1': { dmg: 18000000, max: 2 },
-                    '3': { dmg: null, max: 0 },
-                    '6': { dmg: 24000000, max: 3 },
+                    '0':  { dmg: 18000000, max: 1 },
+                    '1':  { dmg: 18000000, max: 2 },
+                    '3':  { dmg: null, max: 0 },
+                    '6':  { dmg: 24000000, max: 3 },
                     '12': { dmg: 52500000, max: 2 }
                 }
             },
@@ -293,6 +289,7 @@
             'Сыч': {
                 hp: 1000000000,
                 modes: {
+                    '0':  { dmg: 30000000, max: 2 },
                     '1':  { dmg: 30000000, max: 2 },
                     '3':  { dmg: 30000000, max: 3 },
                     '6':  { dmg: 40000000, max: 3 },
@@ -310,7 +307,6 @@
             }
         };
 
-        // Делаем BOSSES доступным глобально для tooltip
         window._BOSSES = BOSSES;
         window._MODES = MODES;
 
@@ -364,7 +360,8 @@
         }
 
         function getModeMultiplier(modeValue) {
-            return parseFloat(modeValue) || 1;
+            const m = MODES[modeValue];
+            return m ? m.multiplier : 1;
         }
 
         function getModeLabel(modeValue) {
@@ -390,9 +387,6 @@
             return getHpPerAttack(boss) * boss.attackLimit;
         }
 
-        // Единый расчёт показателей урона/тату для одного босса.
-        // Используется в updateStats(), renderTable(), exportTSV() и exportXLS(),
-        // чтобы логика подсчёта (включая особый случай Змея реж.6) не расходилась.
         function calcBossRow(boss) {
             let dmgPerAttack, displayDmg;
             if (isZmei6(boss)) {
@@ -412,10 +406,11 @@
         }
 
         function isModeLabel(text) {
-            return /Пацанский|Блатной|Авторитетный|Воровской/.test(text);
+            return /Бригадный|Пацанский|Блатной|Авторитетный|Воровской/.test(text);
         }
 
         function parseModeFromLabel(modeLabel) {
+            if (modeLabel.includes('Бригадный')) return '0';
             if (modeLabel.includes('Блатной')) return '3';
             if (modeLabel.includes('Авторитетный')) return '6';
             if (modeLabel.includes('Воровской')) return '12';
@@ -660,7 +655,6 @@
         }
         deleteSelectedBtn.addEventListener('click', deleteSelected);
 
-        // Обработчик "выбрать все"
         const selectAll = document.getElementById('selectAll');
         selectAll.addEventListener('change', function() {
             const checkboxes = container.querySelectorAll('.row-checkbox');
@@ -779,25 +773,6 @@
             return false;
         }
 
-        function exportTSV() {
-            if (bosses.length === 0) { showToast('⚠️ Нет данных для экспорта'); return null; }
-            let header = ['Босс','Режим','HP','Итоговое HP','Урон на 1 доп. тату','Доп. тату за нападение','Лимит нападений','Урон за нападение','Общий урон','Доп. тату','Тату за победы','Всего тату'];
-            let rows = [];
-            let sumHp=0,sumDmg=0,sumExtra=0,sumWin=0,sumAll=0;
-            bosses.forEach(boss => {
-                const { dmgPerAttack, displayDmg, totalDmg, extraTatu, winTatu, allTatu } = calcBossRow(boss);
-                rows.push([boss.name, getModeLabel(boss.mode), getHpPerAttack(boss), getTotalHp(boss), displayDmg, boss.tatuPerAttack, boss.attackLimit, dmgPerAttack, totalDmg, extraTatu, winTatu, allTatu]);
-                sumHp += getTotalHp(boss);
-                sumDmg += totalDmg; sumExtra += extraTatu; sumWin += winTatu; sumAll += allTatu;
-            });
-            rows.push(['ИТОГО','','',sumHp,'','','','',sumDmg,sumExtra,sumWin,sumAll]);
-            let tsv = header.join('\t') + '\n';
-            rows.forEach(row => tsv += row.join('\t') + '\n');
-            return tsv;
-        }
-
-        // Числовая ячейка для экспорта: Excel получает настоящее число (можно суммировать,
-        // сортировать, использовать в формулах), а mso-number-format задаёт вид "1 234 567".
         function xlsNum(n) {
             const val = Math.round(n) || 0;
             return `<td style="mso-number-format:'#,##0';text-align:right;">${val}</td>`;
@@ -977,22 +952,16 @@
         }
         initCalculator();
 
-        // ================================================================
-        // ФУНКЦИЯ ДЛЯ ЗАПОЛНЕНИЯ ФОРМЫ ИЗ ТАБЛИЦЫ БОССОВ
-        // ================================================================
         window.fillCalculatorFromBoss = function(bossName, modeKey) {
-            // Переключаемся на вкладку "Калькулятор"
             const calcTab = document.querySelector('.tab-btn[data-tab="calculator"]');
             if (calcTab) calcTab.click();
 
-            // Устанавливаем босса
             const bossSelect = document.querySelector('#bossSelect');
             if (bossSelect) {
                 bossSelect.value = bossName;
                 bossSelect.dispatchEvent(new Event('change'));
             }
 
-            // После изменения босса, ждём обновления списка режимов, затем выбираем режим
             setTimeout(() => {
                 const modeSelect = document.querySelector('#modeSelect');
                 if (modeSelect) {
@@ -1006,7 +975,6 @@
                 }
             }, 100);
 
-            // После выбора режима, устанавливаем допки на максимум (если есть)
             setTimeout(() => {
                 const tatuSelect = document.querySelector('#tatuSelect');
                 const maxTatu = parseInt(document.getElementById('displayMaxTatu').textContent) || 0;
@@ -1015,7 +983,6 @@
                 }
             }, 200);
 
-            // Показываем сообщение с названием режима вместо ключа
             const modeLabel = window._MODES && window._MODES[modeKey] ? window._MODES[modeKey].label : modeKey;
             showToast(`✅ Заполнено: ${bossName} - ${modeLabel}`);
         };
@@ -1023,14 +990,12 @@
     })();
 
     // ================================================================
-    // 5. СКРИПТ СПИСКА БОССОВ (второй файл) — с сортировкой по HP внутри категории
-    //     и кнопками экспорта: Excel и PNG, плюс tooltip и клик
+    // 5. СПИСОК БОССОВ
     // ================================================================
     (function bossList() {
         'use strict';
 
         const bosses = [
-            // Беспредельщики
             { name: "Кирпич",    category: "Беспредельщики", hp: 1000,      modes: ["Пацанский"] },
             { name: "Сизый",     category: "Беспредельщики", hp: 10000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Махно",     category: "Беспредельщики", hp: 50000,     modes: ["Пацанский", "Блатной", "Авторитетный"] },
@@ -1046,16 +1011,15 @@
             { name: "Север",     category: "Беспредельщики", hp: 20000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Мазай",     category: "Беспредельщики", hp: 25000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Хирург",    category: "Беспредельщики", hp: 30000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            { name: "Пресс",     category: "Беспредельщики", hp: 70000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
+            { name: "Пресс",     category: "Беспредельщики", hp: 70000000,  modes: ["Пацанский", "Блатной", "Авторитетный", "Бригадный"] },
             { name: "Немой",     category: "Беспредельщики", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Бидон",     category: "Беспредельщики", hp: 300000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Воркута",   category: "Беспредельщики", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            { name: "Старшой",   category: "Беспредельщики", hp: 600000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
-            { name: "Бугор",     category: "Беспредельщики", hp: 1000000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Старшой",   category: "Беспредельщики", hp: 600000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской", "Бригадный"] },
+            { name: "Бугор",     category: "Беспредельщики", hp: 1000000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской", "Бригадный"] },
             { name: "Змей",      category: "Беспредельщики", hp: 13000000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
             { name: "Гвоздь",    category: "Беспредельщики", hp: 25000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Полтос",    category: "Беспредельщики", hp: 950000000,  modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
-            // Надзиратели
             { name: "Палыч",     category: "Надзиратели", hp: 100000,    modes: ["Пацанский"] },
             { name: "Циклоп",    category: "Надзиратели", hp: 300000,    modes: ["Пацанский"] },
             { name: "Раиса",     category: "Надзиратели", hp: 300000,    modes: ["Пацанский"] },
@@ -1071,12 +1035,11 @@
             { name: "Фин",       category: "Надзиратели", hp: 30000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Дюбель",    category: "Надзиратели", hp: 40000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Дантист",   category: "Надзиратели", hp: 100000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            { name: "Чугун",     category: "Надзиратели", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
-            { name: "Кнут",      category: "Надзиратели", hp: 500000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
-            { name: "Сыч",       category: "Надзиратели", hp: 1000000000,  modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской"] },
+            { name: "Чугун",     category: "Надзиратели", hp: 400000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской", "Бригадный"] },
+            { name: "Кнут",      category: "Надзиратели", hp: 500000000, modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской", "Бригадный"] },
+            { name: "Сыч",       category: "Надзиратели", hp: 1000000000,  modes: ["Пацанский", "Блатной", "Авторитетный", "Воровской", "Бригадный"] },
             { name: "Крест",     category: "Надзиратели", hp: 5000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
             { name: "Гром",      category: "Надзиратели", hp: 70000000000, modes: ["Пацанский", "Блатной", "Авторитетный"] },
-            // Рецидивисты
             { name: "Жестянщики", category: "Рецидивисты", hp: 1000000,   modes: ["Пацанский"] },
             { name: "Отбой",      category: "Рецидивисты", hp: 5000000,   modes: ["Пацанский"] },
             { name: "Боцман",     category: "Рецидивисты", hp: 10000000,  modes: ["Пацанский", "Блатной", "Авторитетный"] },
@@ -1090,7 +1053,6 @@
             { name: "Бельмондо",  category: "Рецидивисты", hp: 125000000, modes: ["Пацанский", "Блатной", "Авторитетный"] }
         ];
 
-        // Достаём данные о допках из глобального BOSSES
         const BOSSES = window._BOSSES || {};
         const MODES = window._MODES || {};
 
@@ -1098,32 +1060,32 @@
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
         }
 
-        // Новая тепловая карта
         function getHpClass(hp) {
-            if (hp <= 5000000) return 'hp-low';      // зелёный
-            if (hp <= 600000000) return 'hp-mid';    // жёлтый
-            if (hp <= 5000000000) return 'hp-high';  // оранжевый
-            return 'hp-vhigh';                       // красный
+            if (hp <= 5000000) return 'hp-low';
+            if (hp <= 600000000) return 'hp-mid';
+            if (hp <= 5000000000) return 'hp-high';
+            return 'hp-vhigh';
         }
 
         const modeMultipliers = {
             'Пацанский': 1,
             'Блатной': 3,
             'Авторитетный': 6,
-            'Воровской': 12
+            'Воровской': 12,
+            'Бригадный': 1
         };
 
-        // Маппинг названия режима на его ключ (используется в BOSSES)
         const modeKeyMap = {
             'Пацанский': '1',
             'Блатной': '3',
             'Авторитетный': '6',
-            'Воровской': '12'
+            'Воровской': '12',
+            'Бригадный': '0'
         };
 
         const columnsConfig = {
-            'Беспредельщики': ['Босс', 'Пацанский', 'Блатной', 'Авторитетный', 'Воровской'],
-            'Надзиратели':    ['Босс', 'Пацанский', 'Блатной', 'Авторитетный', 'Воровской'],
+            'Беспредельщики': ['Босс', 'Пацанский', 'Блатной', 'Авторитетный', 'Воровской', 'Бригадный'],
+            'Надзиратели':    ['Босс', 'Пацанский', 'Блатной', 'Авторитетный', 'Воровской', 'Бригадный'],
             'Рецидивисты':    ['Босс', 'Пацанский', 'Блатной', 'Авторитетный']
         };
 
@@ -1178,7 +1140,6 @@
                 tdName.textContent = boss.name;
                 tr.appendChild(tdName);
 
-                // Для каждого режима в столбцах
                 for (let i = 1; i < columns.length; i++) {
                     const modeName = columns[i];
                     const td = document.createElement('td');
@@ -1189,7 +1150,6 @@
                         td.textContent = formatNumber(hp);
                         td.classList.add(getHpClass(hp));
 
-                        // Проверяем, есть ли доп. награды для этого босса и режима
                         const modeKey = modeKeyMap[modeName];
                         const bossData = BOSSES[boss.name];
                         let hasDop = false;
@@ -1241,9 +1201,6 @@
             tablesContainer.appendChild(tableEl);
         });
 
-        // ================================================================
-        // ПОИСК ПО ИМЕНИ + ФИЛЬТР "ТОЛЬКО С ДОПКАМИ"
-        // ================================================================
         const bossSearchInput = document.getElementById('bossSearchInput');
         const dopOnlyCheckbox = document.getElementById('dopOnlyCheckbox');
         const dopOnlyToggle = document.getElementById('dopOnlyToggle');
@@ -1279,13 +1236,8 @@
         if (bossSearchInput) bossSearchInput.addEventListener('input', applyFilters);
         if (dopOnlyCheckbox) dopOnlyCheckbox.addEventListener('change', applyFilters);
 
-        // ================================================================
-        // ОБРАБОТЧИКИ TOOLTIP И КЛИКА
-        // ================================================================
         const tooltip = document.getElementById('bossTooltip');
         let tooltipTimeout = null;
-        // На тач-устройствах нет hover — награду сначала показываем по тапу,
-        // и только повторный тап по той же ячейке переносит боссов в калькулятор.
         const isTouchDevice = window.matchMedia('(hover: none)').matches || navigator.maxTouchPoints > 0;
         let touchActiveCell = null;
 
@@ -1295,7 +1247,6 @@
             let maxTotal = 0;
 
             if (thresholds && thresholds.length > 1) {
-                // Пороговый режим (Змей)
                 const list = [];
                 for (let i = 1; i < thresholds.length; i++) {
                     const prev = thresholds[i-1];
@@ -1308,7 +1259,6 @@
                     `<div class="dop-item"><span class="dop-label">${item.num}-я допка:</span><span class="dop-value">${formatNumber(item.total)}</span></div>`
                 ).join('');
             } else if (dmg && max > 0) {
-                // Обычный режим с одинаковым уроном за каждую допку
                 const list = [];
                 for (let i = 1; i <= max; i++) {
                     list.push({ num: i, total: dmg * i });
@@ -1329,7 +1279,6 @@
                 ${maxTotal > 0 ? `<div class="tt-max">Максимальный урон: ${formatNumber(maxTotal)}</div>` : ''}
                 <div class="tt-hint">${isTouchDevice ? '👆 Нажмите ещё раз, чтобы заполнить калькулятор' : '🖱 Кликните, чтобы заполнить калькулятор'}</div>
             `;
-            // Позиционируем
             const rect = (targetEl || e.target).getBoundingClientRect();
             let left = rect.left + rect.width / 2 - 140;
             let top = rect.bottom + 8;
@@ -1357,10 +1306,8 @@
             return { boss, mode, dmg, max, thresholds };
         }
 
-        // Делегирование на таблицах внутри #tab-bosslist
         const bosslistContainer = document.getElementById('tab-bosslist');
 
-        // Наведение мышью (только для устройств с мышью — на тач-экранах это не используется)
         bosslistContainer.addEventListener('mouseover', function(e) {
             if (isTouchDevice) return;
             const cell = e.target.closest('.hp-cell.has-dop');
@@ -1382,7 +1329,6 @@
             }
         });
 
-        // Клик / тап по ячейке с допками
         bosslistContainer.addEventListener('click', function(e) {
             const cell = e.target.closest('.hp-cell.has-dop');
 
@@ -1393,7 +1339,6 @@
 
             if (isTouchDevice) {
                 if (touchActiveCell !== cell) {
-                    // Первый тап — только показываем награду, в калькулятор не переносим
                     const { boss, mode, dmg, max, thresholds } = readCellReward(cell);
                     if (boss && mode && !isNaN(dmg) && !isNaN(max)) {
                         showTooltip(e, boss, mode, dmg, max, thresholds, cell);
@@ -1401,7 +1346,6 @@
                     }
                     return;
                 }
-                // Повторный тап по той же ячейке — переносим в калькулятор
             }
 
             const boss = cell.dataset.boss;
@@ -1415,7 +1359,6 @@
             }
         });
 
-        // Тап вне ячейки с допками — закрываем открытую подсказку
         document.addEventListener('click', function(e) {
             if (isTouchDevice && touchActiveCell && !e.target.closest('.hp-cell.has-dop')) {
                 hideTooltip();
@@ -1423,9 +1366,12 @@
             }
         });
 
-        // Экспорт Excel для списка боссов — по таблице на категорию (друг под другом
-        // в одном листе), как на сайте. Цвета — только через inline style="", так как
-        // Excel при импорте HTML часто игнорирует классы из <style>.
+        // ============================================================
+        // ЭКСПОРТ EXCEL ДЛЯ СПИСКА БОССОВ
+        // Между таблицами вставляются пустые ячейки-спейсеры, чтобы в
+        // Excel/Google Sheets блоки не слипались (padding ячеек Excel
+        // при импорте HTML часто игнорирует, а отдельная ячейка — нет).
+        // ============================================================
         document.getElementById('exportBtn2').addEventListener('click', function() {
             const catStyle = {
                 'Беспредельщики': { bg: '#221c15', fg: '#ffffff' },
@@ -1434,10 +1380,6 @@
             };
             const hpBg = { 'hp-low': '#e6f4e6', 'hp-mid': '#fff9e6', 'hp-high': '#ffede0', 'hp-vhigh': '#fce4e4' };
             const hpFg = { 'hp-low': '#2e7d32', 'hp-mid': '#a06a00', 'hp-high': '#c4551a', 'hp-vhigh': '#c0392b' };
-            // Ячейки с допками — один и тот же яркий цвет заливки независимо от
-            // уровня HP, чтобы сразу было видно, у кого есть допки, без
-            // всматривания в оттенки. Рамки не используем — у соседних допковых
-            // ячеек они сливаются в один контур вокруг всей группы ("тоннель").
             const DOP_BG = '#ffc107';
             const DOP_FG = '#1a1a1a';
 
@@ -1448,10 +1390,6 @@
                     table.boss-cat td, table.boss-cat th { border:1px solid #999; padding:5px 8px; text-align:center; }
                 </style></head><body>`;
 
-            // Каждую категорию строим в отдельную мини-таблицу, а затем кладём
-            // их рядом друг с другом в ячейках одной внешней строки — иначе
-            // при простом перечислении <table> подряд Excel ставит их одну под
-            // другой, а не в ряд, как на сайте.
             const catBlocks = [];
             categories.forEach(cat => {
                 const list = grouped[cat] || [];
@@ -1491,11 +1429,21 @@
                 catBlocks.push(block);
             });
 
+            // Пустые td-ячейки-спейсеры между таблицами — гарантированный отступ
+            // в Excel/Google Sheets (в отличие от padding, который игнорируется).
+            const outerCells = [];
+            catBlocks.forEach((block, i) => {
+                outerCells.push(`<td style="border:none;vertical-align:top;padding:0;">${block}</td>`);
+                if (i < catBlocks.length - 1) {
+                    outerCells.push(`<td style="border:none;background:#ffffff;width:30px;min-width:30px;">&nbsp;</td>`);
+                }
+            });
+            const totalCols = catBlocks.length * 2 - 1;
+
             html += `<table style="border-collapse:collapse;">` +
-                xlsWatermarkRow(catBlocks.length, 'Жёлтая заливка — в этом режиме можно пробить доп. награды (допки).') +
-                `<tr>` +
-                catBlocks.map((block, i) => `<td style="border:none;vertical-align:top;padding:0 ${i < catBlocks.length - 1 ? 16 : 0}px 0 0;">${block}</td>`).join('') +
-                `</tr></table>`;
+                xlsWatermarkRow(totalCols, 'Жёлтая заливка — в этом режиме можно пробить доп. награды (допки).') +
+                `<tr>${outerCells.join('')}</tr>` +
+                `</table>`;
 
             html += `</body></html>`;
 
@@ -1511,7 +1459,6 @@
             showToast('📄 Экспорт Excel выполнен');
         });
 
-        // Экспорт PNG для списка боссов
         document.getElementById('exportBtnPng2').addEventListener('click', function() {
             const wrap = document.getElementById('tablesContainer2');
             if (!wrap) {
